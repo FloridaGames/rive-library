@@ -143,6 +143,7 @@ for (const s of samples) {
   const out = path.join(DIST, 'samples', s.id);
   fs.writeFileSync(path.join(out, 'README.md'), core.readme(s, base, runtime));
   fs.writeFileSync(path.join(out, 'example.html'), core.html(s, base, core.initial(s), { runtime, background: s.background }) + '\n');
+  if (s.round) fs.writeFileSync(path.join(out, 'vote-demo.html'), core.voteDemo(s, base, { runtime }) + '\n');
 }
 console.log(`dist/ written for ${base}`);
 

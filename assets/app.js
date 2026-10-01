@@ -581,6 +581,7 @@
           [s.file, 'the animation itself', s.path + s.file, bytes(s.size)],
           s.poster ? [s.poster, 'a static picture of it, as a fallback', s.path + s.poster, ''] : null,
           ['example.html', 'a complete page that runs it', s.path + 'example.html', ''],
+          s.round ? ['vote-demo.html', 'the complete vote round: button, tally, buttons per member, outcome', s.path + 'vote-demo.html', ''] : null,
           ['README.md', 'documentation, for people and AI tools', s.path + 'README.md', ''],
           ['sample.json', 'the metadata: controls, sizes, license', s.path + 'sample.json', ''],
         ].filter(Boolean);

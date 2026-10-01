@@ -354,6 +354,221 @@
     return out.join('\n');
   }
 
+  /* ---------- the complete vote round: one standalone page (samples with "round") ---------- */
+
+  function voteDemoUrl(s, base) { return base + samplePath(s) + 'vote-demo.html'; }
+
+  /* Everything the library page does with a vote round, as one file to open or to build on: the animation, a vote
+     button (stop, vote again, speed), a running tally, buttons per member, and the outcome under the double majority
+     with the population figures. Plain HTML, CSS and JS, no build step. */
+  function voteDemo(s, base, o) {
+    o = o || {};
+    var r = s.round, labels = {};
+    controls(s).forEach(function (c) { labels[c.name] = c.label || c.name; });
+    var first = controls(s).filter(function (c) { return c.name === r.order[0]; })[0] || {};
+    var values = first.values || [r.reset, r.pending].concat(Object.keys(r.outcomes));
+    var outs = Object.keys(r.outcomes);
+    var known = { yes: 1, no: 1, abstain: 1 };
+    function colour(v) { return known[v] ? 'var(--' + v + ')' : 'var(--navy)'; }
+    var members = r.order.map(function (c) {
+      return '  [' + q(c) + ', ' + q(labels[c] || c) + (r.population ? ', ' + (r.population[c] || 0) : '') + '],';
+    });
+    var L = [];
+    L.push('<!doctype html>');
+    L.push('<html lang="en">');
+    L.push('<head>');
+    L.push('<meta charset="utf-8">');
+    L.push('<meta name="viewport" content="width=device-width, initial-scale=1">');
+    L.push('<title>' + esc(s.title) + ' · vote round</title>');
+    L.push('<!-- ' + esc(s.title) + ': the complete vote round, from the Rive Library: ' + pageUrl(s, base));
+    L.push('     One file, no build step: open it in a browser, or use it as the starting point in a project.');
+    L.push('     In it: the Rive animation, a vote button (stop, vote again, speed), a running tally, buttons per member to set');
+    L.push('     a vote by hand, and the outcome' + (r.population ? ' under qualified majority' : '') + '. The data block at the top of the script is all');
+    L.push('     there is to change: members, odds, timing' + (r.population ? ', population and the majority rule' : '') + '. -->');
+    L.push('<style>');
+    L.push('  :root { --ink: #161922; --muted: #5b6070; --line: #e1ded5; --bg: #f5f4ef; --card: #fff; --navy: #0e2879;');
+    L.push('          --yes: #2e9e5b; --no: #d7263d; --abstain: #f0a21f; }');
+    L.push('  * { box-sizing: border-box; }');
+    L.push('  body { margin: 0; font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--ink); background: var(--bg); }');
+    L.push('  header { max-width: 1180px; margin: 0 auto; padding: 22px 16px 0; }');
+    L.push('  h1 { font-size: 24px; margin: 0; }');
+    L.push('  header p { margin: 4px 0 0; color: var(--muted); }');
+    L.push('  main { max-width: 1180px; margin: 0 auto; padding: 16px 16px 40px; display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(300px, 1fr); gap: 20px; align-items: start; }');
+    L.push('  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }');
+    L.push('  .bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding: 12px 14px; border-bottom: 1px solid var(--line); }');
+    L.push('  button { font: inherit; cursor: pointer; }');
+    L.push('  #go { font-weight: 600; padding: 11px 18px; border: 0; border-radius: 10px; background: var(--navy); color: #fff; }');
+    L.push('  #go.running { background: #eceae3; color: var(--ink); }');
+    L.push('  .tally { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; color: var(--muted); }');
+    L.push('  .tally b { font-size: 18px; color: var(--ink); font-variant-numeric: tabular-nums; }');
+    L.push('  .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; }');
+    L.push('  #status { font-weight: 600; color: var(--ink); }');
+    L.push('  .speed { margin-left: auto; color: var(--muted); font-size: 14px; }');
+    L.push('  #result { margin: 0; padding: 11px 14px; border-bottom: 1px solid var(--line); }');
+    L.push('  #result.adopted { background: #e3f3e9; }');
+    L.push('  #result.rejected { background: #fbe5e8; }');
+    L.push('  canvas { display: block; width: 100%; aspect-ratio: ' + s.width + ' / ' + s.height + '; }');
+    L.push('  .members { padding: 6px 14px 10px; }');
+    L.push('  .member { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 5px 0; border-bottom: 1px dashed var(--line); }');
+    L.push('  .member:last-child { border-bottom: 0; }');
+    L.push('  .member code { color: var(--muted); font-size: 12px; }');
+    L.push('  .seg { display: inline-flex; gap: 2px; padding: 3px; background: #efede6; border-radius: 9px; }');
+    L.push('  .seg button { font-size: 12px; font-weight: 600; border: 0; background: transparent; color: var(--muted); padding: 6px 7px; border-radius: 6px; }');
+    L.push('  .seg button[aria-pressed="true"] { background: #fff; color: var(--ink); box-shadow: 0 1px 2px rgba(0, 0, 0, .12); }');
+    outs.concat([r.pending]).forEach(function (v) {
+      L.push('  .seg [data-v="' + v + '"][aria-pressed="true"] { background: ' + colour(v) + '; color: #fff; }');
+    });
+    L.push('  #clear { padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }');
+    L.push('  @media (max-width: 860px) { main { grid-template-columns: minmax(0, 1fr); } }');
+    L.push('</style>');
+    L.push('</head>');
+    L.push('<body>');
+    L.push('<header><h1>' + esc(s.title) + '</h1><p>' + esc(s.summary || '') + '</p></header>');
+    L.push('<main>');
+    L.push('  <section class="card">');
+    L.push('    <div class="bar">');
+    L.push('      <button id="go" type="button">▶ ' + esc(r.label || 'Hold a vote') + '</button>');
+    L.push('      <div class="tally">');
+    outs.forEach(function (v) {
+      L.push('        <span><span class="dot" style="background: ' + colour(v) + '"></span><b id="n-' + v + '">0</b> ' + v + '</span>');
+    });
+    L.push('        <span id="status"></span>');
+    L.push('      </div>');
+    L.push('      <label class="speed">Speed <select id="speed"><option value="1">1×</option><option value="2">2×</option><option value="4">4×</option></select></label>');
+    L.push('    </div>');
+    L.push('    <p id="result" hidden></p>');
+    L.push('    <canvas id="council"></canvas>');
+    L.push('  </section>');
+    L.push('  <section class="card">');
+    L.push('    <div class="bar"><strong>Members</strong><span style="flex: 1"></span><button id="clear" type="button">All to ' + esc(r.reset) + '</button></div>');
+    L.push('    <div class="members" id="members"></div>');
+    L.push('  </section>');
+    L.push('</main>');
+    L.push('');
+    L.push('<script src="' + runtimeUrl(o.runtime) + '"></script>');
+    L.push('<script>');
+    L.push('// ---------- the data: change these, the rest follows ----------');
+    L.push('const SRC = ' + q(fileUrl(s, base)) + ';');
+    L.push('// code, name' + (r.population ? ', population in millions (' + (r.populationNote || 'approximate') + ')' : '') + '. The order is the voting order.');
+    L.push('const MEMBERS = [');
+    L = L.concat(members);
+    L.push('];');
+    L.push('const VALUES = ' + JSON.stringify(values) + ';');
+    L.push('const RESET = ' + q(r.reset) + ', VOTING = ' + q(r.pending) + ';');
+    L.push('const OUTCOMES = ' + JSON.stringify(r.outcomes) + '; // the odds when the round draws a vote');
+    L.push('const TIMING = { start: ' + (r.start || 700) + ', think: ' + (r.think || 800) + ', pause: ' + (r.pause || 200) + ' }; // ms at speed 1x');
+    if (r.population) {
+      var m = r.majority || { states: 0.55, population: 0.65, blocking: 4 };
+      L.push('// Qualified majority: at least `states` of the members vote yes, holding at least `population` of the people.');
+      L.push('// A blocking minority needs at least `blocking` members. Abstaining counts as not voting yes.');
+      L.push('const MAJORITY = { states: ' + m.states + ', population: ' + m.population + ', blocking: ' + m.blocking + ' };');
+    }
+    L.push('');
+    L.push('// ---------- the animation ----------');
+    L.push('const council = new rive.Rive({');
+    L.push('  src: SRC,');
+    L.push('  canvas: document.getElementById("council"),');
+    L.push('  artboard: ' + q(s.artboard) + ',');
+    L.push('  stateMachine: ' + q(s.stateMachine) + ',');
+    L.push('  autoplay: true,');
+    L.push('  autoBind: true,');
+    L.push('  onLoad: () => {');
+    L.push('    council.resizeDrawingSurfaceToCanvas();');
+    L.push('    MEMBERS.forEach(([code]) => setVote(code, votes[code] || RESET));');
+    L.push('  },');
+    L.push('});');
+    L.push('window.addEventListener("resize", () => council.resizeDrawingSurfaceToCanvas());');
+    L.push('');
+    L.push('const votes = {}; // code -> value: what this page has set');
+    L.push('function setVote(code, value) {');
+    L.push('  const vm = council.viewModelInstance;');
+    L.push('  if (vm) vm.enum(code).value = value;');
+    L.push('  votes[code] = value;');
+    L.push('  document.querySelectorAll(`[data-member="${code}"] button`).forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === value)));');
+    L.push('  tally();');
+    L.push('}');
+    L.push('');
+    L.push('// ---------- buttons per member ----------');
+    L.push('const list = document.getElementById("members");');
+    L.push('MEMBERS.forEach(([code, name]) => {');
+    L.push('  const row = document.createElement("div");');
+    L.push('  row.className = "member";');
+    L.push('  row.innerHTML = `<span>${name} <code>${code}</code></span><span class="seg" data-member="${code}">` +');
+    L.push('    VALUES.map((v) => `<button type="button" data-v="${v}" aria-pressed="${v === RESET}">${v}</button>`).join("") + "</span>";');
+    L.push('  row.querySelectorAll("button").forEach((b) => b.addEventListener("click", () => setVote(code, b.dataset.v)));');
+    L.push('  list.appendChild(row);');
+    L.push('});');
+    L.push('document.getElementById("clear").addEventListener("click", () => { stop(); MEMBERS.forEach(([code]) => setVote(code, RESET)); });');
+    L.push('');
+    L.push('// ---------- the vote round ----------');
+    L.push('// Everyone back to RESET, then member by member: first VOTING (the seat lights up), then the vote, drawn from OUTCOMES.');
+    L.push('const go = document.getElementById("go"), statusEl = document.getElementById("status");');
+    L.push('let timers = [], running = false;');
+    L.push('function later(fn, ms) { timers.push(setTimeout(fn, ms)); }');
+    L.push('function stop() {');
+    L.push('  timers.forEach(clearTimeout);');
+    L.push('  timers = [];');
+    L.push('  running = false;');
+    L.push('  go.classList.remove("running");');
+    L.push('  go.textContent = ' + q('▶ ' + (r.label || 'Hold a vote')) + ';');
+    L.push('}');
+    L.push('function draw() {');
+    L.push('  const total = Object.values(OUTCOMES).reduce((a, b) => a + b, 0);');
+    L.push('  let x = Math.random() * total;');
+    L.push('  for (const [value, weight] of Object.entries(OUTCOMES)) { x -= weight; if (x < 0) return value; }');
+    L.push('  return Object.keys(OUTCOMES)[0];');
+    L.push('}');
+    L.push('function holdVote() {');
+    L.push('  if (running) { stop(); statusEl.textContent = "stopped"; return; }');
+    L.push('  const speed = Number(document.getElementById("speed").value) || 1;');
+    L.push('  running = true;');
+    L.push('  go.classList.add("running");');
+    L.push('  go.textContent = "■ Stop";');
+    L.push('  MEMBERS.forEach(([code]) => setVote(code, RESET));');
+    L.push('  let i = 0;');
+    L.push('  const next = () => {');
+    L.push('    if (i === MEMBERS.length) { stop(); go.textContent = "▶ Vote again"; tally(); return; }');
+    L.push('    const [code, name] = MEMBERS[i];');
+    L.push('    setVote(code, VOTING);');
+    L.push('    statusEl.textContent = `${name} is voting…`;');
+    L.push('    later(() => { setVote(code, draw()); i++; later(next, TIMING.pause / speed); }, TIMING.think / speed);');
+    L.push('  };');
+    L.push('  later(next, TIMING.start / speed);');
+    L.push('}');
+    L.push('go.addEventListener("click", holdVote);');
+    L.push('');
+    L.push('// ---------- tally and outcome ----------');
+    L.push('function tally() {');
+    L.push('  const count = Object.fromEntries(Object.keys(OUTCOMES).map((v) => [v, 0]));');
+    L.push('  MEMBERS.forEach(([code]) => { if (count[votes[code]] !== undefined) count[votes[code]]++; });');
+    L.push('  Object.entries(count).forEach(([v, n]) => { document.getElementById("n-" + v).textContent = n; });');
+    L.push('  const voted = Object.values(count).reduce((a, b) => a + b, 0);');
+    L.push('  if (!running) statusEl.textContent = voted === MEMBERS.length ? `all ${voted} have voted` : `${MEMBERS.length - voted} to vote`;');
+    L.push('  const box = document.getElementById("result");');
+    L.push('  box.hidden = voted < MEMBERS.length; // the outcome once every member has voted, by the round or by hand');
+    if (r.population) {
+      L.push('  if (box.hidden) return;');
+      L.push('  const total = MEMBERS.reduce((a, m) => a + m[2], 0);');
+      L.push('  const yes = MEMBERS.filter(([code]) => votes[code] === "yes");');
+      L.push('  const share = yes.reduce((a, m) => a + m[2], 0) / total;');
+      L.push('  const need = Math.ceil(MAJORITY.states * MEMBERS.length - 1e-9);');
+      L.push('  const statesOk = yes.length >= need, popOk = share >= MAJORITY.population;');
+      L.push('  const adopted = statesOk && (popOk || MEMBERS.length - yes.length < MAJORITY.blocking);');
+      L.push('  box.className = adopted ? "adopted" : "rejected";');
+      L.push('  box.innerHTML = `<strong>${adopted ? "Adopted" : "Not adopted"}</strong> by qualified majority. ` +');
+      L.push('    `${yes.length} of ${MEMBERS.length} states voted yes (${statesOk ? "at least " : ""}${need} needed), ` +');
+      L.push('    `representing ${Math.round(share * 100)}% of the population (${popOk ? "at least " : ""}${Math.round(MAJORITY.population * 100)}% needed).`;');
+    } else {
+      L.push('  if (!box.hidden) box.textContent = "Everyone has voted.";');
+    }
+    L.push('}');
+    L.push('tally();');
+    L.push('</script>');
+    L.push('</body>');
+    L.push('</html>');
+    return L.join('\n');
+  }
+
   /* ---------- iframe embed (Canvas LMS, Moodle, Notion, Google Sites, ...) ---------- */
 
   function embedSrc(s, base, values, o) {
@@ -425,6 +640,7 @@
     out.push('- **Artboard:** `' + s.artboard + '` · **State machine:** `' + s.stateMachine + '` · **Size:** ' + s.width + ' × ' + s.height + ' (keep this aspect ratio), shown about ' + Math.round(o.width || s.displayWidth || s.width) + ' px wide');
     out.push('- **Runtime:** ' + (stack === 'react' ? '`@rive-app/react-canvas` (npm)' : '`' + runtimeUrl(o.runtime) + '` (script tag, global `rive`), or `@rive-app/canvas` from npm'));
     out.push('- **Full documentation:** ' + readmeUrl(s, base));
+    if (s.round) out.push('- **Complete vote round:** ' + voteDemoUrl(s, base) + ' (one HTML file: vote button with stop, vote again and speed, a running tally, buttons per member, and the outcome' + (s.round.population ? ' under qualified majority, population figures included' : '') + '). If I want all of that, take this file as the starting point instead of the short example below.');
     if (s.description) { out.push(''); out.push('## What it does'); out.push(s.description); }
     if (s.notes && s.notes.length) { out.push(''); s.notes.forEach(function (n) { out.push('- ' + n); }); }
     var t = controlTable(s, values);
@@ -483,6 +699,14 @@
     out.push('');
     out.push('## Plain HTML');
     out.push('');
+    if (s.round) {
+      out.push('## The complete vote round');
+      out.push('');
+      out.push('One HTML file with everything the library page does: a vote button (stop, vote again, speed), a running tally, buttons per member and the outcome' + (s.round.population ? ' under qualified majority, with the population figures' : '') + ': ' + voteDemoUrl(s, base));
+      out.push('');
+      out.push('Open it, or give it to Claude Code as the starting point. The short example below has only the animation and `holdVote()`.');
+      out.push('');
+    }
     out.push('Also as a ready-to-open page: ' + exampleUrl(s, base));
     out.push('');
     out.push('```html');
@@ -560,6 +784,8 @@
     react: react,
     embed: embed,
     embedSrc: embedSrc,
+    voteDemo: voteDemo,
+    voteDemoUrl: voteDemoUrl,
     prompt: prompt,
     readme: readme,
     llms: llms,
