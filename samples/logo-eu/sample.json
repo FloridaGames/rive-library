@@ -22,7 +22,7 @@
   "width": 460,
   "height": 226,
   "displayWidth": 320,
-  "background": "#1f2229",
+  "background": "#ffffff",
   "controls": [
     {
       "name": "entree",
@@ -118,7 +118,7 @@
     "Plays its entrance by itself on load; fire `entree` to replay it.",
     "Clicking or tapping the logo plays the highlight; that listener is built into the file.",
     "To draw attention now and then, fire `highlight` at random intervals (for example every 1 to 5 minutes) and skip it while the tab is hidden.",
-    "Looks best on a dark background: the stripes are light grey."
+    "The stripes are light grey, so on white they are subtle; on a dark background they stand out more."
   ],
   "author": "Stijlbreuk",
   "source": "rive-showcase: tools/gen-logo.py (built from svg/logo-eu.svg)",
