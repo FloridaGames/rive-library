@@ -2,3 +2,4 @@ dist/
 .scratch/
 node_modules/
 sources/*/rive/build/
+sources/eu-council-vote/rive/council-vote.rml
