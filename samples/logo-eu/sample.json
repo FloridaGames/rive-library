@@ -1,0 +1,127 @@
+{
+  "id": "logo-eu",
+  "title": "EU logo (European Commission)",
+  "summary": "The European Commission logo builds itself up: stripes fly in, the flag unfolds, twelve stars pop in.",
+  "description": "The Berlaymont logo of the European Commission as an interactive Rive animation. On load the grey stripes fly in from the sides, the blue flag unfolds and the twelve stars pop in one by one, clockwise. A highlight makes the flag grow, light up and jump. Click or tap the logo to play the highlight; the durations, the size and the jump height are adjustable.",
+  "category": "logo",
+  "tags": [
+    "eu",
+    "europe",
+    "european commission",
+    "eu council",
+    "brand",
+    "entrance",
+    "highlight",
+    "interactive",
+    "lobby game"
+  ],
+  "file": "logo-eu.riv",
+  "poster": "logo-eu.svg",
+  "artboard": "Logo",
+  "stateMachine": "Logo",
+  "width": 460,
+  "height": 226,
+  "displayWidth": 320,
+  "background": "#1f2229",
+  "controls": [
+    {
+      "name": "entree",
+      "type": "trigger",
+      "label": "Play entrance",
+      "description": "Replays the entrance animation. It also plays once by itself when the file loads."
+    },
+    {
+      "name": "highlight",
+      "type": "trigger",
+      "label": "Play highlight",
+      "description": "A short attention move: the flag grows, lights up and jumps, in front of the stripes."
+    },
+    {
+      "name": "entreeDuur",
+      "type": "number",
+      "label": "Entrance duration",
+      "unit": "s",
+      "default": 2.1,
+      "min": 0.7,
+      "max": 4,
+      "step": 0.1,
+      "preview": "entree",
+      "snaps": [
+        0.7,
+        0.9,
+        1.1,
+        1.4,
+        1.7,
+        2.1,
+        2.6,
+        3.2,
+        4
+      ],
+      "description": "Length of the entrance in seconds. The file snaps to the nearest of 0.7, 0.9, 1.1, 1.4, 1.7, 2.1, 2.6, 3.2 or 4."
+    },
+    {
+      "name": "highlightDuur",
+      "type": "number",
+      "label": "Highlight duration",
+      "unit": "s",
+      "default": 1.1,
+      "min": 0.4,
+      "max": 2.7,
+      "step": 0.1,
+      "preview": "highlight",
+      "snaps": [
+        0.4,
+        0.6,
+        0.8,
+        1.1,
+        1.5,
+        2,
+        2.7
+      ],
+      "description": "Length of the highlight in seconds. Snaps to the nearest of 0.4, 0.6, 0.8, 1.1, 1.5, 2 or 2.7."
+    },
+    {
+      "name": "highlightGrootte",
+      "type": "number",
+      "label": "Highlight size",
+      "unit": "%",
+      "default": 132,
+      "min": 100,
+      "max": 200,
+      "step": 1,
+      "preview": "highlight",
+      "description": "How much it grows during the highlight, in percent (100 = no growth). Stepless."
+    },
+    {
+      "name": "highlightHoogte",
+      "type": "number",
+      "label": "Highlight jump",
+      "unit": "px",
+      "default": 26,
+      "min": 0,
+      "max": 90,
+      "step": 1,
+      "preview": "highlight",
+      "description": "How far it jumps up during the highlight, in artboard pixels (0 = no jump). Stepless."
+    },
+    {
+      "name": "aangeraakt",
+      "type": "boolean",
+      "internal": true,
+      "label": "Touched",
+      "description": "Set by the file's own click listener, so clicking or tapping the logo plays the highlight. Leave it alone."
+    }
+  ],
+  "replayTrigger": "entree",
+  "hoverTrigger": "highlight",
+  "notes": [
+    "Plays its entrance by itself on load; fire `entree` to replay it.",
+    "Clicking or tapping the logo plays the highlight; that listener is built into the file.",
+    "To draw attention now and then, fire `highlight` at random intervals (for example every 1 to 5 minutes) and skip it while the tab is hidden.",
+    "Looks best on a dark background: the stripes are light grey."
+  ],
+  "author": "Stijlbreuk",
+  "source": "rive-showcase: tools/gen-logo.py (built from svg/logo-eu.svg)",
+  "license": "Logo of the European Commission. Use it in line with the Commission's visual identity rules, for example in teaching material about the EU.",
+  "added": "2026-10-01"
+}

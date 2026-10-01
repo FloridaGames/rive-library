@@ -1,0 +1,78 @@
+# Rive Library
+
+Ready-made Rive animations for teaching and projects, with code that works in **Claude Code, Lovable, Gemini,
+ChatGPT, Cursor, plain HTML, React and Canvas LMS**.
+
+**Site:** https://floridagames.github.io/rive-library/ · **For AI tools:** https://floridagames.github.io/rive-library/llms.txt
+
+Every animation is one `.riv` file on a public, CORS-enabled URL. A page loads it with the free Rive runtime and
+changes it through a few named controls. Nobody has to open Rive to use one.
+
+## What is in it
+
+| | |
+|---|---|
+| 2 logos | European Commission (EU) and Tilburg University: an entrance on load, a highlight on click, adjustable timing |
+| 17 icons | The animated Lucide icons from the EU Lobby Game: they draw themselves in; colour and stroke width adjustable |
+
+## Using one
+
+Open an animation in the gallery, set it up with the controls, and pick a tab under **Use it**:
+
+| Tab | For |
+|---|---|
+| **AI prompt** | Paste into Claude Code, Lovable, Gemini, ChatGPT or Cursor. Holds the URL, the controls with your values, the rules AI tools get wrong, and a working example (plain HTML or React). |
+| **HTML** | A complete page. Open it, or copy the `<canvas>` and both `<script>` tags into your own page. |
+| **React** | A TypeScript component for Lovable, Next.js, Vite. Needs `npm install @rive-app/react-canvas`. |
+| **Embed** | An `<iframe>` for places that strip scripts: Canvas LMS, Moodle, Notion, Google Sites. |
+| **Files** | The `.riv`, a static SVG fallback, a runnable `example.html`, the README and `sample.json`. |
+
+With Claude Code you can also skip the gallery:
+*"Read https://floridagames.github.io/rive-library/llms.txt and add the self-drawing clock icon next to the title."*
+
+## Adding one
+
+The gallery has an **Add a sample** page: drop a `.riv`, it reads the artboards, state machines and controls,
+you describe it, and it gives you the `sample.json` plus a link that creates it on GitHub. Details and the full
+`sample.json` reference are in [CONTRIBUTING.md](CONTRIBUTING.md).
+
+A sample is a folder with two files, and nothing else needs to change:
+
+```
+samples/my-sample/
+  my-sample.riv
+  sample.json
+```
+
+## How it is built
+
+| | |
+|---|---|
+| `samples/<id>/` | the only source: the `.riv`, its `sample.json`, optionally a static `.svg` |
+| `assets/core.js` | the code generator. The snippets on the site, the READMEs and `llms.txt` all come from here, so they cannot disagree |
+| `assets/player.js` | plays a sample on a canvas the same way the snippets do (gallery, detail page, embed) |
+| `assets/app.js`, `add.js`, `style.css` | the site |
+| `index.html`, `embed.html` | the gallery and the iframe player |
+| `tools/build.mjs` | checks every `sample.json` and writes `dist/`: the site plus `library.json`, `llms.txt`, and a `README.md` and `example.html` per sample |
+| `.github/workflows/` | builds and publishes to GitHub Pages on every push to `main`; checks pull requests |
+
+Node only, no `npm install`:
+
+```
+node tools/build.mjs --serve      # build and open http://localhost:8780/
+node tools/build.mjs --check      # only validate the samples
+node tools/build.mjs              # build dist/ for the public URL in library.config.json
+```
+
+`dist/` is generated and not committed. Moving the library to another host means changing `baseUrl` in
+`library.config.json`; everything else follows.
+
+## Runtime
+
+The snippets load `@rive-app/canvas` **2.42.1** from jsDelivr, the version these files are tested with. It is set
+in one place: `runtime` in `library.config.json`.
+
+## Licenses
+
+Each sample carries its own license line in `sample.json`, shown on its page. The icons are derived from
+[Lucide](https://lucide.dev) (ISC); the logos belong to their owners. See [NOTICE.md](NOTICE.md).

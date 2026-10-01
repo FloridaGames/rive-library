@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rive Library</title>
+  <meta name="description" content="Ready-made Rive animations for teaching and projects: live previews, adjustable controls, and code you can paste into Claude Code, Lovable, Gemini or any HTML page.">
+  <link rel="alternate" type="text/plain" href="llms.txt" title="Rive Library for AI tools">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230e2879'/%3E%3Cpath d='M16 6l10 10-10 10L6 16z' fill='%23e2b54c'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="assets/style.css">
+  <script>
+    /* the chosen theme, before first paint, so it does not flash */
+    try { var t = localStorage.getItem('rl.theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+  </script>
+  <script src="__RIVE_RUNTIME__" defer></script>
+  <script src="assets/core.js" defer></script>
+  <script src="assets/player.js" defer></script>
+  <script src="assets/app.js" defer></script>
+  <script src="assets/add.js" defer></script>
+</head>
+<body>
+  <header class="top">
+    <div class="wrap">
+      <a class="brand" href="#/" aria-label="Rive Library, home">
+        <svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#0e2879"/><path d="M16 6l10 10-10 10L6 16z" fill="#e2b54c"/></svg>
+        <span>Rive Library</span>
+      </a>
+      <nav aria-label="Main">
+        <a class="link" href="#/" data-nav="gallery">Browse</a>
+        <a class="link" href="#/help" data-nav="help">How to use</a>
+        <button class="btn btn-ghost icon-btn" id="theme" type="button" aria-label="Switch light or dark">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+        </button>
+        <a class="btn btn-primary" href="#/add" data-nav="add">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          <span>Add<span class="hide-sm"> a sample</span></span>
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="view" class="wrap" tabindex="-1">
+    <p class="empty">Loading the library…</p>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <span>Rive Library</span>
+      <a href="llms.txt">llms.txt for AI tools</a>
+      <a href="library.json">library.json</a>
+      <a href="#/help">How to use</a>
+      <a href="#/add">Add a sample</a>
+      <a href="https://rive.app/docs/runtimes/web/web-js" rel="noopener">Rive web runtime docs</a>
+    </div>
+  </footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

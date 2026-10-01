@@ -1,0 +1,125 @@
+{
+  "id": "logo-tiu",
+  "title": "Tilburg University logo",
+  "summary": "The TiU logo assembles itself: letters rise, the tree grows, the eight diamonds pop in.",
+  "description": "The Tilburg University logo as an interactive Rive animation. On load the letters rise towards the centre (Tilburg from the left, University from the right), the tree grows from the ground, the two figures slide in and the eight diamonds pop in clockwise. A highlight makes the emblem grow and jump while the diamonds light up golden. Click or tap the logo to play the highlight; the durations, the size and the jump height are adjustable.",
+  "category": "logo",
+  "tags": [
+    "tiu",
+    "tilburg university",
+    "university",
+    "brand",
+    "entrance",
+    "highlight",
+    "interactive"
+  ],
+  "file": "logo-tiu.riv",
+  "poster": "logo-tiu.svg",
+  "artboard": "TiU",
+  "stateMachine": "TiU",
+  "width": 674,
+  "height": 301,
+  "displayWidth": 360,
+  "background": "#ffffff",
+  "controls": [
+    {
+      "name": "entree",
+      "type": "trigger",
+      "label": "Play entrance",
+      "description": "Replays the entrance animation. It also plays once by itself when the file loads."
+    },
+    {
+      "name": "highlight",
+      "type": "trigger",
+      "label": "Play highlight",
+      "description": "A short attention move: the emblem grows and jumps in front of the letters, and the diamonds light up golden."
+    },
+    {
+      "name": "entreeDuur",
+      "type": "number",
+      "label": "Entrance duration",
+      "unit": "s",
+      "default": 2.1,
+      "min": 0.7,
+      "max": 4,
+      "step": 0.1,
+      "preview": "entree",
+      "snaps": [
+        0.7,
+        0.9,
+        1.1,
+        1.4,
+        1.7,
+        2.1,
+        2.6,
+        3.2,
+        4
+      ],
+      "description": "Length of the entrance in seconds. The file snaps to the nearest of 0.7, 0.9, 1.1, 1.4, 1.7, 2.1, 2.6, 3.2 or 4."
+    },
+    {
+      "name": "highlightDuur",
+      "type": "number",
+      "label": "Highlight duration",
+      "unit": "s",
+      "default": 1.1,
+      "min": 0.4,
+      "max": 2.7,
+      "step": 0.1,
+      "preview": "highlight",
+      "snaps": [
+        0.4,
+        0.6,
+        0.8,
+        1.1,
+        1.5,
+        2,
+        2.7
+      ],
+      "description": "Length of the highlight in seconds. Snaps to the nearest of 0.4, 0.6, 0.8, 1.1, 1.5, 2 or 2.7."
+    },
+    {
+      "name": "highlightGrootte",
+      "type": "number",
+      "label": "Highlight size",
+      "unit": "%",
+      "default": 132,
+      "min": 100,
+      "max": 200,
+      "step": 1,
+      "preview": "highlight",
+      "description": "How much it grows during the highlight, in percent (100 = no growth). Stepless."
+    },
+    {
+      "name": "highlightHoogte",
+      "type": "number",
+      "label": "Highlight jump",
+      "unit": "px",
+      "default": 26,
+      "min": 0,
+      "max": 90,
+      "step": 1,
+      "preview": "highlight",
+      "description": "How far it jumps up during the highlight, in artboard pixels (0 = no jump). Stepless."
+    },
+    {
+      "name": "aangeraakt",
+      "type": "boolean",
+      "internal": true,
+      "label": "Touched",
+      "description": "Set by the file's own click listener, so clicking or tapping the logo plays the highlight. Leave it alone."
+    }
+  ],
+  "replayTrigger": "entree",
+  "hoverTrigger": "highlight",
+  "notes": [
+    "Plays its entrance by itself on load; fire `entree` to replay it.",
+    "Clicking or tapping the logo plays the highlight; that listener is built into the file.",
+    "The artboard is taller than the drawing, so the emblem has room to grow. Leave that space in your layout.",
+    "Looks best on a light background: the letters are dark blue."
+  ],
+  "author": "Stijlbreuk",
+  "source": "rive-showcase: tools/gen-logo-tiu.py (built from svg/logo-tiu.svg)",
+  "license": "Logo of Tilburg University. Use it in Tilburg University teaching and projects, in line with the TiU brand guidelines.",
+  "added": "2026-10-01"
+}

@@ -1,0 +1,8 @@
+{
+  "name": "Rive Library",
+  "description": "Ready-made Rive animations for teaching and projects, with working code for plain HTML, React and AI coding tools.",
+  "baseUrl": "https://floridagames.github.io/rive-library/",
+  "repo": "FloridaGames/rive-library",
+  "branch": "main",
+  "runtime": "2.42.1"
+}

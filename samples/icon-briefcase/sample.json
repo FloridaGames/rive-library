@@ -1,0 +1,70 @@
+{
+  "id": "icon-briefcase",
+  "title": "Briefcase",
+  "summary": "A line icon that draws itself in (Lucide \"briefcase\"). Colour and stroke width are adjustable.",
+  "description": "The Lucide \"briefcase\" icon as a Rive file whose strokes draw themselves in. In the EU Lobby Game it stands for the client (\"opdrachtgever\"). The file holds only the drawing and three controls: draw progress, stroke colour and stroke width. There is no timeline inside: your page animates the draw progress from 0 to 1, which keeps duration, delay and easing in your own code. All icons in this set share the same artboard, controls and code, so swapping one for another is a matter of changing the file name.",
+  "category": "icon",
+  "collection": "Lobby Game icons",
+  "tags": [
+    "icon",
+    "line icon",
+    "lucide",
+    "briefcase",
+    "opdrachtgever",
+    "draw-on",
+    "stroke",
+    "lobby game"
+  ],
+  "file": "icon-briefcase.riv",
+  "poster": "icon-briefcase.svg",
+  "artboard": "Icoon",
+  "stateMachine": "Icoon",
+  "width": 240,
+  "height": 240,
+  "displayWidth": 64,
+  "background": "#ffffff",
+  "controls": [
+    {
+      "name": "tekenen",
+      "type": "number",
+      "label": "Draw progress",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "step": 0.01,
+      "animated": true,
+      "description": "0 = nothing visible, 1 = the whole icon. The file has no timeline: animate this from 0 to 1 yourself (see the draw-on code)."
+    },
+    {
+      "name": "kleur",
+      "type": "color",
+      "label": "Stroke colour",
+      "default": "#0e2879",
+      "description": "The stroke colour. Set it with `.rgb(r, g, b)`; a canvas does not inherit the CSS `color`."
+    },
+    {
+      "name": "dikte",
+      "type": "number",
+      "label": "Stroke width",
+      "default": 20,
+      "min": 10,
+      "max": 35,
+      "step": 1,
+      "description": "Stroke width in artboard units. The artboard is 240 wide, ten times Lucide's 24, so 20 equals Lucide's standard 2 px stroke."
+    }
+  ],
+  "recipe": {
+    "type": "draw-on",
+    "property": "tekenen",
+    "duration": 700
+  },
+  "notes": [
+    "Stays fully drawn until your code animates `tekenen`; the snippets below draw it in on load and again on click.",
+    "Strokes are real Rive strokes with round caps, trimmed synchronously: every part of the icon draws at the same time, so icons with more paths are not slower.",
+    "The static SVG (icon-briefcase.svg) is the same drawing; show it as a fallback until the canvas is ready."
+  ],
+  "author": "Stijlbreuk",
+  "source": "eu-lobby-game: rive-iconen/maak-icoon.py (Lucide \"briefcase\" via Iconify)",
+  "license": "ISC. Icon shapes from Lucide (lucide.dev), © Lucide Icons and Contributors; Rive conversion by Stijlbreuk.",
+  "added": "2026-10-01"
+}
