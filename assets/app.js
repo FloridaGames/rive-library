@@ -112,7 +112,7 @@
   /* ---------- players: mount when visible, clean up when gone ---------- */
 
   function values(s) {
-    if (!state.values[s.id]) state.values[s.id] = C.defaults(s);
+    if (!state.values[s.id]) state.values[s.id] = C.initial(s);
     return state.values[s.id];
   }
 
@@ -153,11 +153,12 @@
 
   function cardHtml(s) {
     var wide = s.width / s.height > 1.6;
+    var big = !wide && (s.displayWidth || s.width) >= 400;      /* a detailed picture gets a 2x2 card */
     var w = Math.max(72, Math.min(s.displayWidth || s.width, 420));
-    var size = '--w:' + w + 'px;--ar:' + s.width + ' / ' + s.height;
+    var size = '--w:' + w + 'px;--ar:' + s.width + ' / ' + s.height + ';--arn:' + (s.width / s.height).toFixed(4);
     var meta = [C.categoryLabel(s.category).replace(/s$/, '')];
     if (s.collection) meta.push(s.collection); else meta.push(bytes(s.size));
-    return '<article class="card' + (wide ? ' wide' : '') + '" data-id="' + esc(s.id) + '">' +
+    return '<article class="card' + (wide ? ' wide' : big ? ' big' : '') + '" data-id="' + esc(s.id) + '">' +
       '<div class="card-stage" style="--stage-bg:' + esc(s.background || '#ffffff') + '">' +
       (s.poster ? '<img alt="" loading="lazy"' + (s.recipe ? ' class="ghost"' : '') + ' src="' + esc(s.path + s.poster) + '" style="' + size + '">' : '') +
       '<canvas style="' + size + '" aria-hidden="true"></canvas></div>' +
@@ -278,6 +279,13 @@
   function controlHtml(s, c) {
     if (c.internal) return '';
     var v = values(s)[c.name];
+    if (c.type === 'enum' && c.values && c.values.length <= 4) {
+      /* a short enum is one row of buttons: the council vote has 25 of them, and a dropdown each is a chore */
+      return '<div class="ctl ctl-inline" title="' + esc(c.description || '') + '"><span class="lbl">' + esc(c.label || c.name) +
+        ' <code>' + esc(c.name) + '</code></span><div class="seg seg-sm" role="group" aria-label="' + esc(c.label || c.name) + '" data-enum="' + esc(c.name) + '">' +
+        c.values.map(function (x) { return '<button type="button" data-val="' + esc(x) + '" aria-pressed="' + (x === v) + '">' + esc(x) + '</button>'; }).join('') +
+        '</div></div>';
+    }
     var anim = s.recipe && s.recipe.property === c.name;
     var head = '<div class="ctl-head"><label for="c-' + esc(c.name) + '">' + esc(c.label || c.name) + '</label>' +
       (c.type === 'number' ? '<span class="ctl-val" data-out="' + esc(c.name) + '"></span>' : '<code>' + esc(c.name) + '</code>') + '</div>';
@@ -322,6 +330,9 @@
     var ctrls = (s.controls || []).filter(function (c) { return !c.internal && c.type !== 'trigger'; });
     var trigs = (s.controls || []).filter(function (c) { return !c.internal && c.type === 'trigger'; });
     var hidden = (s.controls || []).filter(function (c) { return c.internal; });
+    var enums = ctrls.filter(function (c) { return c.type === 'enum' && c.values && c.values.length > 1; });
+    var manyEnums = enums.length >= 5;
+    var tall = s.width / s.height < 1.3 && (s.displayWidth || s.width) >= 400;   /* a big square picture gets a taller stage */
     var related = lib.samples.filter(function (x) { return x.id !== s.id && (s.collection ? x.collection === s.collection : x.category === s.category); });
 
     view.innerHTML =
@@ -331,8 +342,8 @@
 
       '<div class="detail-grid"><div class="col-main">' +
       '<section class="stage-wrap" aria-label="Preview">' +
-      '<div class="stage' + (bgWhich === 'checker' ? ' checker' : '') + '" id="stage" style="--stage-bg:' + esc(bgColor(s, bgWhich)) + '">' +
-      '<canvas id="preview" style="--w:' + Math.round(stageW) + 'px;--ar:' + s.width + ' / ' + s.height + '"></canvas>' +
+      '<div class="stage' + (bgWhich === 'checker' ? ' checker' : '') + (tall ? ' tall' : '') + '" id="stage" style="--stage-bg:' + esc(bgColor(s, bgWhich)) + '">' +
+      '<canvas id="preview" style="--w:' + Math.round(stageW) + 'px;--ar:' + s.width + ' / ' + s.height + ';--arn:' + (s.width / s.height).toFixed(4) + '"></canvas>' +
       '<span class="hint">' + (s.recipe ? 'Click to draw it again' : s.hoverTrigger ? 'Click the animation to play the ' + esc(s.hoverTrigger) : '') + '</span></div>' +
       '<div class="stage-bar"><div class="seg" role="group" aria-label="Preview background">' +
       BGS.map(function (b) { return '<button type="button" data-bg="' + b[0] + '" aria-pressed="' + (b[0] === bgWhich) + '"><span class="swatch" style="background:' + (b[0] === 'checker' ? 'repeating-conic-gradient(#ccc 0 25%, #fff 0 50%) 0 0/8px 8px' : bgColor(s, b[0])) + '"></span>' + b[1] + '</button>'; }).join('') +
@@ -346,7 +357,9 @@
       (ctrls.length || trigs.length ? '<section><h2>Controls</h2>' +
         (trigs.length ? '<div class="triggers">' + trigs.map(function (c) { return '<button class="btn btn-sm" type="button" data-fire="' + esc(c.name) + '" title="' + esc(c.description || '') + '">▶ ' + esc(c.label || c.name) + '</button>'; }).join('') + '</div>' : '') +
         '<div>' + ctrls.map(function (c) { return controlHtml(s, c); }).join('') + '</div>' +
-        '<p style="margin-top:10px"><button class="btn btn-ghost btn-sm" type="button" id="reset">Reset to defaults</button></p></section>' : '') +
+        '<p style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">' +
+        (manyEnums ? '<button class="btn btn-sm" type="button" id="shuffle">Random values</button>' : '') +
+        '<button class="btn btn-ghost btn-sm" type="button" id="reset">Reset to defaults</button></p></section>' : '') +
       '<section><h2>Details</h2><dl class="facts">' +
       '<dt>Artboard</dt><dd><code>' + esc(s.artboard) + '</code></dd>' +
       '<dt>State machine</dt><dd><code>' + esc(s.stateMachine) + '</code></dd>' +
@@ -402,7 +415,17 @@
     var codeTimer = null;
     function codeSoon() { clearTimeout(codeTimer); codeTimer = setTimeout(renderUse, 150); }
 
+    function setEnum(c, v) {
+      values(s)[c.name] = v;
+      player.set(c.name, v);
+      $$('[data-enum="' + c.name + '"] button').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.val === v)); });
+    }
     ctrls.forEach(function (c) {
+      var seg = $('[data-enum="' + c.name + '"]');
+      if (seg) {
+        $$('button', seg).forEach(function (b) { b.addEventListener('click', function () { setEnum(c, b.dataset.val); codeSoon(); }); });
+        return;
+      }
       var el = $('[data-ctl="' + c.name + '"]');
       if (!el) return;
       var read = function () {
@@ -429,11 +452,21 @@
       });
     });
     $$('[data-fire]').forEach(function (b) { b.addEventListener('click', function () { player.fire(b.dataset.fire); }); });
+    /* random values, set one by one in a random order: for the council vote that is a vote rolling in */
+    var shuffle = $('#shuffle'), wave = [];
+    if (shuffle) shuffle.addEventListener('click', function () {
+      wave.forEach(clearTimeout);
+      enums.slice().sort(function () { return Math.random() - 0.5; }).forEach(function (c, i) {
+        var pick = c.values[1 + Math.floor(Math.random() * (c.values.length - 1))];
+        wave.push(setTimeout(function () { setEnum(c, pick); codeSoon(); }, i * 90));
+      });
+    });
     var reset = $('#reset');
     if (reset) reset.addEventListener('click', function () {
       state.values[s.id] = C.defaults(s);
       ctrls.forEach(function (c) {
         var el = $('[data-ctl="' + c.name + '"]'), v = values(s)[c.name];
+        if ($('[data-enum="' + c.name + '"]')) { setEnum(c, v); return; }
         if (!el) return;
         if (c.type === 'boolean') el.checked = !!v;
         else if (c.type === 'number' && c.snaps) el.value = nearest(c.snaps, v);

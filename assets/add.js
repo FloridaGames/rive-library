@@ -51,7 +51,7 @@
       '<strong>Drop your .riv here</strong><span>or click to choose one. Export it from Rive with <em>Export → for runtime</em>.</span></label>' +
       '<p class="notice err" id="err" hidden style="margin-top:12px"></p>' +
       '<div id="inspect" hidden style="margin-top:16px">' +
-      '<div class="stage-wrap"><div class="stage" id="a-stage" style="--stage-bg:#ffffff;height:300px"><canvas id="a-canvas" style="--w:420px;--ar:1"></canvas></div>' +
+      '<div class="stage-wrap"><div class="stage" id="a-stage" style="--stage-bg:#ffffff;--stage-h:300px"><canvas id="a-canvas" style="--w:420px;--ar:1"></canvas></div>' +
       '<div class="stage-bar"><span id="a-file" style="font:600 14px var(--mono)"></span><span class="spacer"></span>' +
       '<button class="btn btn-sm" type="button" id="a-other">Choose another file</button></div></div>' +
       '<div class="panel found" style="margin-top:16px"><h2>What is inside</h2><div id="a-found"></div></div>' +
@@ -102,6 +102,7 @@
         }
         canvas.style.setProperty('--w', Math.min(420, res.info.width) + 'px');
         canvas.style.setProperty('--ar', res.info.width + ' / ' + res.info.height);
+        canvas.style.setProperty('--arn', (res.info.width / res.info.height).toFixed(4));
         preview();
         drop.hidden = true;
         $('#inspect').hidden = false;

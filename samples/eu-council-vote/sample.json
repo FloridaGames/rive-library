@@ -1,0 +1,402 @@
+{
+  "id": "eu-council-vote",
+  "title": "EU Council vote",
+  "summary": "A round table with 25 EU member states; your code lights up each seat as voting yes, no or abstaining.",
+  "description": "An illustration of the Council of the EU around a round table, with one control per member state. Set a country to yes, no or abstain and its seat lights up: a coloured strip on the table edge in front of the member, a badge with a check, cross or dash that pops in, and a soft glow behind the chair. Set it back to none and the highlight fades out. Every country is an enum named after its two-letter code in lower case, so a whole vote is a few lines of code.",
+  "category": "illustration",
+  "tags": [
+    "eu",
+    "council",
+    "council of the eu",
+    "vote",
+    "voting",
+    "ballot",
+    "yes",
+    "no",
+    "abstain",
+    "member states",
+    "round table",
+    "qualified majority",
+    "politics",
+    "lobby game",
+    "germany",
+    "spain",
+    "finland",
+    "france",
+    "estonia",
+    "romania",
+    "italy",
+    "latvia",
+    "croatia",
+    "hungary",
+    "netherlands",
+    "lithuania",
+    "slovenia",
+    "czechia",
+    "cyprus",
+    "portugal",
+    "belgium",
+    "austria",
+    "sweden",
+    "poland",
+    "denmark",
+    "ireland",
+    "greece",
+    "luxembourg",
+    "malta"
+  ],
+  "file": "eu-council-vote.riv",
+  "poster": "eu-council-vote.webp",
+  "artboard": "CouncilVote",
+  "stateMachine": "CouncilVote",
+  "width": 1350,
+  "height": 1350,
+  "displayWidth": 600,
+  "background": "#ffffff",
+  "controls": [
+    {
+      "name": "at",
+      "type": "enum",
+      "label": "Austria",
+      "default": "none",
+      "values": [
+        "none",
+        "yes",
+        "no",
+        "abstain"
+      ],
+      "description": "How Austria votes: none (no highlight), yes, no or abstain."
+    },
+    {
+      "name": "be",
+      "type": "enum",
+      "label": "Belgium",
+      "default": "none",
+      "values": [
+        "none",
+        "yes",
+        "no",
+        "abstain"
+      ],
+      "description": "How Belgium votes: none (no highlight), yes, no or abstain."
+    },
+    {
+      "name": "hr",
+      "type": "enum",
+      "label": "Croatia",
+      "default": "none",
+      "values": [
+        "none",
+        "yes",
+        "no",
+        "abstain"
+      ],
+      "description": "How Croatia votes: none (no highlight), yes, no or abstain."
+    },
+    {
+      "name": "cy",
+      "type": "enum",
+      "label": "Cyprus",
+      "default": "none",
+      "values": [
+        "none",
+        "yes",
+        "no",
+        "abstain"
+      ],
+      "description": "How Cyprus votes: none (no highlight), yes, no or abstain."
+    },
+    {
+      "name": "cz",
+      "type": "enum",
+      "label": "Czechia",
+      "default": "none",
+      "values": [
+        "none",
+        "yes",
+        "no",
+        "abstain"
+      ],
+      "description": "How Czechia votes: none (no highlight), yes, no or abstain."
+    },
+    {
+      "name": "dk",
+      "type": "enum",
+      "label": "Denmark",
+      "default": "none",
+      "values": [
+        "none",
+        "yes",
+        "no",
+        "abstain"
+      ],
+      "description": "How Denmark votes: none (no highlight), yes, no or abstain."
+    },
+    {
+      "name": "ee",
+      "type": "enum",
+      "label": "Estonia",
+      "default": "none",
+      "values": [
+        "none",
+        "yes",
+        "no",
+        "abstain"
+      ],
+      "description": "How Estonia votes: none (no highlight), yes, no or abstain."
+    },
+    {
+      "name": "fi",
+      "type": "enum",
+      "label": "Finland",
+      "default": "none",
+      "values": [
+        "none",
+        "yes",
+        "no",
+        "abstain"
+      ],
+      "description": "How Finland votes: none (no highlight), yes, no or abstain."
+    },
+    {
+      "name": "fr",
+      "type": "enum",
+      "label": "France",
+      "default": "none",
+      "values": [
+        "none",
+        "yes",
+        "no",
+        "abstain"
+      ],
+      "description": "How France votes: none (no highlight), yes, no or abstain."
+    },
+    {
+      "name": "de",
+      "type": "enum",
+      "label": "Germany",
+      "default": "none",
+      "values": [
+        "none",
+        "yes",
+        "no",
+        "abstain"
+      ],
+      "description": "How Germany votes: none (no highlight), yes, no or abstain."
+    },
+    {
+      "name": "gr",
+      "type": "enum",
+      "label": "Greece",
+      "default": "none",
+      "values": [
+        "none",
+        "yes",
+        "no",
+        "abstain"
+      ],
+      "description": "How Greece votes: none (no highlight), yes, no or abstain."
+    },
+    {
+      "name": "hu",
+      "type": "enum",
+      "label": "Hungary",
+      "default": "none",
+      "values": [
+        "none",
+        "yes",
+        "no",
+        "abstain"
+      ],
+      "description": "How Hungary votes: none (no highlight), yes, no or abstain."
+    },
+    {
+      "name": "ie",
+      "type": "enum",
+      "label": "Ireland",
+      "default": "none",
+      "values": [
+        "none",
+        "yes",
+        "no",
+        "abstain"
+      ],
+      "description": "How Ireland votes: none (no highlight), yes, no or abstain."
+    },
+    {
+      "name": "it",
+      "type": "enum",
+      "label": "Italy",
+      "default": "none",
+      "values": [
+        "none",
+        "yes",
+        "no",
+        "abstain"
+      ],
+      "description": "How Italy votes: none (no highlight), yes, no or abstain."
+    },
+    {
+      "name": "lv",
+      "type": "enum",
+      "label": "Latvia",
+      "default": "none",
+      "values": [
+        "none",
+        "yes",
+        "no",
+        "abstain"
+      ],
+      "description": "How Latvia votes: none (no highlight), yes, no or abstain."
+    },
+    {
+      "name": "lt",
+      "type": "enum",
+      "label": "Lithuania",
+      "default": "none",
+      "values": [
+        "none",
+        "yes",
+        "no",
+        "abstain"
+      ],
+      "description": "How Lithuania votes: none (no highlight), yes, no or abstain."
+    },
+    {
+      "name": "lu",
+      "type": "enum",
+      "label": "Luxembourg",
+      "default": "none",
+      "values": [
+        "none",
+        "yes",
+        "no",
+        "abstain"
+      ],
+      "description": "How Luxembourg votes: none (no highlight), yes, no or abstain."
+    },
+    {
+      "name": "mt",
+      "type": "enum",
+      "label": "Malta",
+      "default": "none",
+      "values": [
+        "none",
+        "yes",
+        "no",
+        "abstain"
+      ],
+      "description": "How Malta votes: none (no highlight), yes, no or abstain."
+    },
+    {
+      "name": "nl",
+      "type": "enum",
+      "label": "Netherlands",
+      "default": "none",
+      "values": [
+        "none",
+        "yes",
+        "no",
+        "abstain"
+      ],
+      "description": "How Netherlands votes: none (no highlight), yes, no or abstain."
+    },
+    {
+      "name": "pl",
+      "type": "enum",
+      "label": "Poland",
+      "default": "none",
+      "values": [
+        "none",
+        "yes",
+        "no",
+        "abstain"
+      ],
+      "description": "How Poland votes: none (no highlight), yes, no or abstain."
+    },
+    {
+      "name": "pt",
+      "type": "enum",
+      "label": "Portugal",
+      "default": "none",
+      "values": [
+        "none",
+        "yes",
+        "no",
+        "abstain"
+      ],
+      "description": "How Portugal votes: none (no highlight), yes, no or abstain."
+    },
+    {
+      "name": "ro",
+      "type": "enum",
+      "label": "Romania",
+      "default": "none",
+      "values": [
+        "none",
+        "yes",
+        "no",
+        "abstain"
+      ],
+      "description": "How Romania votes: none (no highlight), yes, no or abstain."
+    },
+    {
+      "name": "si",
+      "type": "enum",
+      "label": "Slovenia",
+      "default": "none",
+      "values": [
+        "none",
+        "yes",
+        "no",
+        "abstain"
+      ],
+      "description": "How Slovenia votes: none (no highlight), yes, no or abstain."
+    },
+    {
+      "name": "es",
+      "type": "enum",
+      "label": "Spain",
+      "default": "none",
+      "values": [
+        "none",
+        "yes",
+        "no",
+        "abstain"
+      ],
+      "description": "How Spain votes: none (no highlight), yes, no or abstain."
+    },
+    {
+      "name": "se",
+      "type": "enum",
+      "label": "Sweden",
+      "default": "none",
+      "values": [
+        "none",
+        "yes",
+        "no",
+        "abstain"
+      ],
+      "description": "How Sweden votes: none (no highlight), yes, no or abstain."
+    }
+  ],
+  "preset": {
+    "de": "yes",
+    "fr": "no",
+    "it": "abstain",
+    "nl": "yes",
+    "pl": "no",
+    "es": "yes",
+    "se": "yes"
+  },
+  "notes": [
+    "Set a vote with `vm.enum(\"de\").value = \"yes\"`. The values are `none`, `yes`, `no` and `abstain`; any other string is ignored.",
+    "The picture has 25 seats. Bulgaria (`bg`) and Slovakia (`sk`) have no seat in it, so there is no control for them.",
+    "Each change fades and pops by itself (about a third of a second), so setting all 25 at once still reads as a wave of lights. For a dramatic count, set them one by one with a short delay.",
+    "The file does not count the votes; your page knows the values it set, so it can show the tally and decide on a qualified majority."
+  ],
+  "author": "Stijlbreuk",
+  "source": "sources/eu-council-vote/generate.py in this repository (illustration: council-table.webp)",
+  "license": "For teaching and projects about the EU. The illustration is AI-generated; the figures are fictional.",
+  "added": "2026-10-01"
+}

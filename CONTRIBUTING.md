@@ -78,6 +78,7 @@ Create `samples/<id>/` with the `.riv` and a `sample.json`, then run `node tools
 | `displayWidth` | | the usual width on a page, in px (the snippets start from it) |
 | `background` | | the colour it looks best on |
 | `collection` | | groups related samples, e.g. `"Lobby Game icons"` |
+| `preset` | | values the page and the examples start with, e.g. `{ "de": "yes" }`; *Reset* goes back to the defaults |
 | `replayTrigger` | | the trigger the *Replay* button fires |
 | `hoverTrigger` | | the trigger fired when you hover its card (else: replay) |
 | `recipe` | | behaviour the page adds, see below |

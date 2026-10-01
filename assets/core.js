@@ -76,6 +76,13 @@
     controls(s).forEach(function (c) { if (c.type !== 'trigger' && c.default !== undefined) v[c.name] = c.default; });
     return v;
   }
+  /* What a page starts with: the defaults, with the sample's `preset` on top. The council vote is all `none` by
+     default, which shows nothing; its preset is a vote in progress. */
+  function initial(s) {
+    var v = defaults(s);
+    Object.keys(s.preset || {}).forEach(function (k) { v[k] = s.preset[k]; });
+    return v;
+  }
   function valueOf(c, values) {
     return values && values[c.name] !== undefined ? values[c.name] : c.default;
   }
@@ -102,6 +109,28 @@
   }
   function setComment(c, v) {
     return label(c) + (c.type === 'color' ? ': ' + String(v).toLowerCase() : '');
+  }
+
+  /* The lines onLoad uses to set values. Up to eight controls: every one, so the snippet doubles as the list of what
+     can be set. More than that (the council vote has 25): only those that differ from the default, plus one example
+     line. The README and the AI prompt still list every control in their table. */
+  var MANY = 8;
+  function exampleValue(c) {
+    if (c.type === 'enum' && c.values && c.values.length > 1) return c.values[1];
+    if (c.type === 'boolean') return !c.default;
+    if (c.type === 'number') return c.max !== undefined ? c.max : 1;
+    return c.default;
+  }
+  function setters(s, values, ts) {
+    var all = settable(s);
+    var list = all.length <= MANY ? all : all.filter(function (c) { return String(valueOf(c, values)) !== String(c.default); });
+    var lines = pad(list.map(function (c) { var v = valueOf(c, values); return [setLine(c, v, ts), setComment(c, v)]; }));
+    var rest = all.filter(function (c) { return list.indexOf(c) < 0; });
+    if (all.length > MANY && rest.length) {
+      lines.push('// ' + rest.length + ' more at their default (' + rest.slice(0, 6).map(function (c) { return c.name; }).join(', ') +
+        (rest.length > 6 ? ', ...' : '') + '), e.g. ' + setLine(rest[0], exampleValue(rest[0]), ts));
+    }
+    return lines;
   }
   /* Firing a trigger. Plain JS runs after onLoad, so it can be direct; React reads `rive` from state, so every step
      may be null and gets a `?.`. */
@@ -162,8 +191,7 @@
     var load = [rv + '.resizeDrawingSurfaceToCanvas();'];
     if (sets.length && hasViewModel(s)) load.push('const vm = ' + rv + '.viewModelInstance;');
     if (hasInputs(s)) load.push('const input = (name) => ' + rv + '.stateMachineInputs(' + q(s.stateMachine) + ')?.find((i) => i.name === name);');
-    var setters = sets.map(function (c) { var v = valueOf(c, values); return [setLine(c, v, false), setComment(c, v)]; });
-    load = load.concat(pad(setters));
+    load = load.concat(setters(s, values, false));
     if (recipe) load.push('riveDrawOn(' + rv + ', ' + q(recipe.property) + ', ' + ms + ');');
 
     var js = [];
@@ -251,7 +279,7 @@
       out.push('    if (!vm) return;');
     }
     if (hasInputs(s)) out.push('    const input = (name: string) => rive.stateMachineInputs(' + q(s.stateMachine) + ')?.find((i) => i.name === name);');
-    out = out.concat(indent(pad(sets.map(function (c) { var v = valueOf(c, values); return [setLine(c, v, true), setComment(c, v)]; })), 4));
+    out = out.concat(indent(setters(s, values, true), 4));
     if (recipe) out.push('    drawOn(rive, ' + q(recipe.property) + ', ' + ms + ');');
     out.push('  }, [rive]);');
     if (trig.length) {
@@ -404,19 +432,19 @@
     out.push('Also as a ready-to-open page: ' + exampleUrl(s, base));
     out.push('');
     out.push('```html');
-    out.push(html(s, base, null, o));
+    out.push(html(s, base, initial(s), o));
     out.push('```');
     out.push('');
     out.push('## React (TypeScript)');
     out.push('');
     out.push('```tsx');
-    out.push(react(s, base, null, o));
+    out.push(react(s, base, initial(s), o));
     out.push('```');
     out.push('');
     out.push('## Where scripts are not allowed (Canvas LMS, Moodle, Notion, Google Sites)');
     out.push('');
     out.push('```html');
-    out.push(embed(s, base, null, o));
+    out.push(embed(s, base, initial(s), o));
     out.push('```');
     out.push('');
     out.push('Any control can go in the URL (`&' + (settable(s)[0] ? settable(s)[0].name : 'name') + '=...`, colours without `#`), plus `bg=ffffff` for a background and `every=30` to replay every 30 seconds.');
@@ -452,7 +480,7 @@
   }
 
   var CATEGORIES = {
-    logo: 'Logos', icon: 'Icons', character: 'Characters', interface: 'Interface', illustration: 'Illustrations',
+    logo: 'Logos', illustration: 'Illustrations', character: 'Characters', interface: 'Interface', icon: 'Icons',
     background: 'Backgrounds', other: 'Other',
   };
   function categoryLabel(c) { return CATEGORIES[c] || (c ? c.charAt(0).toUpperCase() + c.slice(1) : 'Other'); }
@@ -471,6 +499,7 @@
     varName: varName,
     hexToRgb: hexToRgb,
     defaults: defaults,
+    initial: initial,
     settable: settable,
     triggers: triggers,
     html: html,

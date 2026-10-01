@@ -65,6 +65,12 @@ for (const dir of fs.readdirSync(path.join(ROOT, 'samples')).sort()) {
     if (!TYPES.includes(c.type)) bad(`control "${c.name}": type must be one of ${TYPES.join(', ')}`);
     if (c.type === 'color' && c.default && !/^#[0-9a-f]{6}$/i.test(c.default)) bad(`control "${c.name}": colour default must look like #0e2879`);
     if (c.type === 'number' && c.min !== undefined && c.max !== undefined && c.min > c.max) bad(`control "${c.name}": min is above max`);
+    if (c.type === 'enum' && c.values && c.default !== undefined && !c.values.includes(c.default)) bad(`control "${c.name}": default "${c.default}" is not one of its values`);
+  }
+  for (const [k, v] of Object.entries(s.preset || {})) {
+    const c = (s.controls || []).find((x) => x.name === k);
+    if (!c) bad(`"preset" sets "${k}", which is not a control`);
+    else if (c.type === 'enum' && c.values && !c.values.includes(v)) bad(`"preset" sets "${k}" to "${v}", which is not one of its values`);
   }
   if (s.recipe && !names.has(s.recipe.property)) bad(`"recipe.property" (${s.recipe.property}) is not one of the controls`);
   const triggerNames = new Set((s.controls || []).filter((c) => c.type === 'trigger').map((c) => c.name));
@@ -125,7 +131,7 @@ fs.writeFileSync(path.join(DIST, 'llms.txt'), core.llms(library, base));
 for (const s of samples) {
   const out = path.join(DIST, 'samples', s.id);
   fs.writeFileSync(path.join(out, 'README.md'), core.readme(s, base, runtime));
-  fs.writeFileSync(path.join(out, 'example.html'), core.html(s, base, null, { runtime, background: s.background }) + '\n');
+  fs.writeFileSync(path.join(out, 'example.html'), core.html(s, base, core.initial(s), { runtime, background: s.background }) + '\n');
 }
 console.log(`dist/ written for ${base}`);
 

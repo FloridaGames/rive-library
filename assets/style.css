@@ -178,14 +178,17 @@ main { flex: 1; }
 }
 .card:hover { box-shadow: var(--shadow-lift); transform: translateY(-2px); border-color: var(--line-strong); }
 .card.wide { grid-column: span 2; }
+.card.big { grid-column: span 2; grid-row: span 2; }
 .card-stage {
-  position: relative; height: 168px; background: var(--stage-bg, #fff);
+  --card-h: 168px;
+  position: relative; height: var(--card-h); background: var(--stage-bg, #fff);
   display: grid; place-items: center; overflow: hidden;
   border-bottom: 1px solid var(--line);
 }
 .card-stage canvas, .card-stage img {
-  grid-area: 1 / 1; display: block; max-width: 84%; max-height: 78%;
-  width: var(--w, 64px); aspect-ratio: var(--ar, 1);
+  grid-area: 1 / 1; display: block;
+  /* as wide as asked, but never wider than the box allows at this aspect ratio: no overflow, no squashing */
+  width: min(var(--w, 64px), 84%, calc(var(--card-h) * .8 * var(--arn, 1))); height: auto; aspect-ratio: var(--ar, 1);
 }
 .card-stage img { object-fit: contain; }
 .card-stage img.ghost { opacity: .16; }   /* a drawn-in icon starts empty: the poster is only a placeholder */
@@ -210,14 +213,15 @@ main { flex: 1; }
 
 .detail-grid { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(280px, 1fr); gap: 20px; align-items: start; }
 .stage-wrap { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
-.stage { position: relative; height: clamp(260px, 42vw, 440px); background: var(--stage-bg, #fff); display: grid; place-items: center; transition: background .25s; }
+.stage { --stage-h: clamp(260px, 42vw, 440px); position: relative; height: var(--stage-h); overflow: hidden; background: var(--stage-bg, #fff); display: grid; place-items: center; transition: background .25s; }
 .stage.checker {
   background-color: #fff;
   background-image: linear-gradient(45deg, #e9e9e9 25%, transparent 25%), linear-gradient(-45deg, #e9e9e9 25%, transparent 25%),
     linear-gradient(45deg, transparent 75%, #e9e9e9 75%), linear-gradient(-45deg, transparent 75%, #e9e9e9 75%);
   background-size: 20px 20px; background-position: 0 0, 0 10px, 10px -10px, -10px 0;
 }
-.stage canvas { display: block; width: var(--w); max-width: 86%; max-height: 82%; aspect-ratio: var(--ar); }
+.stage.tall { --stage-h: clamp(320px, 72vw, 660px); }
+.stage canvas { display: block; width: min(var(--w), 86%, calc(var(--stage-h) * .86 * var(--arn, 1))); height: auto; aspect-ratio: var(--ar); }
 .stage .hint { position: absolute; left: 14px; bottom: 12px; font-size: 12.5px; color: #8b8f99; background: rgba(255,255,255,.75); padding: 3px 8px; border-radius: 6px; }
 .stage-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 10px 12px; border-top: 1px solid var(--line); }
 .stage-bar .spacer { flex: 1; }
@@ -248,6 +252,13 @@ main { flex: 1; }
 }
 .ctl .hex { width: 100px; font-family: var(--mono); }
 .triggers { display: flex; flex-wrap: wrap; gap: 8px; }
+.ctl-inline { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 6px 0; }
+.ctl-inline .lbl { font-weight: 600; font-size: 14px; }
+.ctl-inline .lbl code { font-size: 12px; color: var(--muted); font-weight: 400; }
+.seg-sm button { padding: 6px 8px; font-size: 12.5px; }
+.seg [data-val="yes"][aria-pressed="true"] { background: #2e9e5b; color: #fff; }
+.seg [data-val="no"][aria-pressed="true"] { background: #d7263d; color: #fff; }
+.seg [data-val="abstain"][aria-pressed="true"] { background: #f0a21f; color: #1b1300; }
 dl.facts { display: grid; grid-template-columns: auto 1fr; gap: 7px 14px; margin: 0; font-size: 14px; }
 dl.facts dt { color: var(--muted); }
 dl.facts dd { margin: 0; overflow-wrap: anywhere; }
@@ -305,7 +316,8 @@ dl.facts code { font-size: 13px; background: var(--surface-2); padding: 1px 5px;
 .related { margin: 36px 0 60px; }
 .related h2 { font-size: 20px; margin-bottom: 14px; }
 .related .grid { padding-bottom: 0; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
-.related .card-stage { height: 120px; }
+.related .card-stage { --card-h: 120px; }
+.card.big .card-stage { --card-h: 400px; }
 
 /* ---------- help + add ---------- */
 
@@ -378,8 +390,9 @@ footer a { color: var(--muted); }
   .hero { padding-top: 30px; }
   .hero p.lede { font-size: 16.5px; }
   .grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
-  .card.wide { grid-column: 1 / -1; }
-  .card-stage { height: 140px; }
+  .card.wide, .card.big { grid-column: 1 / -1; grid-row: auto; }
+  .card-stage { --card-h: 140px; }
+  .card.big .card-stage { --card-h: 300px; }
   .field-row { grid-template-columns: 1fr; }
   .use-head, .use-body { padding-left: 14px; padding-right: 14px; }
   .tabs { padding-left: 10px; padding-right: 10px; }

@@ -46,3 +46,12 @@ is the test environment, not a bug.
   (240 wide, so 10× Lucide).
 - Property names are Dutch because the source projects are. Keep them: they are the API of the file.
 - Use `stateMachine` (singular). Runtime 2.42 warns that `stateMachines` is deprecated.
+- `eu-council-vote` is generated: `python sources/eu-council-vote/generate.py --build` writes the RML from the seat
+  table and builds the `.riv` into `samples/` (needs the Rive CLI, `~/.rive/bin/rive`). Edit the script, never the
+  `.rml`. One enum per country code (`none`, `yes`, `no`, `abstain`), one state-machine layer per country. The
+  picture has 25 seats (no Bulgaria, no Slovakia) and three transparent holes where the black flag stripes were
+  cut out (DE, BE, EE); black patches under the picture fill them. A new picture means new seat angles and holes:
+  the docstring says how they were measured.
+- A sample with more than eight controls gets short snippets: only the values that differ from the default, plus
+  one example line (`setters()` in `core.js`). `preset` in `sample.json` gives the page and the examples a
+  starting state.
