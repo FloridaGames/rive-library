@@ -4,15 +4,20 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Rive animation</title>
-  <!-- The iframe player: embed.html?id=<sample>&<control>=<value>&bg=ffffff&every=30
+  <!-- The iframe player: embed.html?id=<sample>&<control>=<value>&bg=ffffff&every=30&round=1 (round: a vote button)
        For places that strip scripts (Canvas LMS, Moodle, Notion, Google Sites). Reads samples/<id>/sample.json. -->
   <style>
     html, body { margin: 0; height: 100%; background: transparent; overflow: hidden; }
     canvas { display: block; width: 100%; height: 100%; }
     .err { font: 14px/1.4 system-ui, sans-serif; color: #888; padding: 12px; }
+    .vote { position: fixed; left: 10px; top: 10px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font: 600 14px/1.3 system-ui, sans-serif; }
+    .vote button { font: inherit; padding: 9px 14px; border: 0; border-radius: 9px; background: #0e2879; color: #fff; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.18); }
+    .vote span { background: rgba(255,255,255,.92); color: #161922; padding: 6px 10px; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,.12); }
+    .vote span:empty { display: none; }
   </style>
   <script src="__RIVE_RUNTIME__"></script>
   <script src="assets/player.js"></script>
+  <script src="assets/round.js"></script>
 </head>
 <body>
   <canvas id="c"></canvas>
@@ -43,9 +48,30 @@
           if (s.recipe) { canvas.style.cursor = 'pointer'; canvas.addEventListener('click', function () { h.replay(); }); }
           var every = Number(q.get('every'));
           if (every > 0) setInterval(function () { if (!document.hidden && h.ready) h.hover(); }, Math.max(2, every) * 1000);
+          if (s.round && q.get('round') === '1') voteButton(s, h);
         })
         .catch(function () { fail('This animation could not be loaded.'); });
     })();
+
+    /* round=1: a button that plays a whole vote round, and the outcome after it */
+    function voteButton(s, h) {
+      var r = s.round, box = document.createElement('div'), go = document.createElement('button'), info = document.createElement('span'), run = null;
+      box.className = 'vote'; go.type = 'button'; go.textContent = '▶ ' + (r.label || 'Hold a vote');
+      box.appendChild(go); box.appendChild(info); document.body.appendChild(box);
+      go.addEventListener('click', function () {
+        if (run && run.running()) { run.stop(); go.textContent = '▶ ' + (r.label || 'Hold a vote'); info.textContent = ''; return; }
+        go.textContent = '■ Stop'; info.textContent = '';
+        run = VoteRound.run(function (c, v) { h.set(c, v); }, r, {
+          onStep: function (c, v, i, result) { info.textContent = Object.keys(result).length + ' / ' + r.order.length; },
+          onDone: function (result) {
+            go.textContent = '▶ Vote again';
+            if (!r.population) { info.textContent = ''; return; }
+            var m = VoteRound.majority(result, r);
+            info.textContent = (m.adopted ? 'Adopted' : 'Not adopted') + ': ' + m.count.yes + ' of ' + m.members + ' yes, ' + Math.round(m.share * 100) + '% of the population';
+          },
+        });
+      });
+    }
   </script>
 </body>
 </html>

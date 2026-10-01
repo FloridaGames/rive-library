@@ -79,6 +79,7 @@ Create `samples/<id>/` with the `.riv` and a `sample.json`, then run `node tools
 | `background` | | the colour it looks best on |
 | `collection` | | groups related samples, e.g. `"Lobby Game icons"` |
 | `preset` | | values the page and the examples start with, e.g. `{ "de": "yes" }`; *Reset* goes back to the defaults |
+| `round` | | a vote round over enum controls: `order`, `reset`, `pending`, `outcomes` (weights), timing (`start`, `think`, `pause` in ms) and optionally `population` + `majority` for a double-majority outcome. The page gets a vote button above the preview, the snippets a `holdVote()` |
 | `replayTrigger` | | the trigger the *Replay* button fires |
 | `hoverTrigger` | | the trigger fired when you hover its card (else: replay) |
 | `recipe` | | behaviour the page adds, see below |

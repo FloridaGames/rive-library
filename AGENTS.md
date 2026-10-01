@@ -50,7 +50,10 @@ is the test environment, not a bug.
   `eu-court.svg` (plain ids per country, flags moved to a layer of their own above the table), converts it with
   `sources/tools/svg2rml.py`, adds the vote effects and builds the `.riv` into `samples/` (needs the Rive CLI,
   `~/.rive/bin/rive`). The 9 MB `council-vote.rml` is a build product and not in git: edit the SVG or the script.
-  One enum per country code (`none`, `yes`, `no`, `abstain`), one state-machine layer per country. Named groups
+  One enum per country code (`none`, `voting`, `yes`, `no`, `abstain`), one state-machine layer per country;
+  `voting` is a looping "voting now" state (flag lifts and waves, gold rings, pool of light). The vote round itself
+  is page logic: `assets/round.js` (page and embed) and `roundJs()` in `core.js` (the copied `holdVote()`), both
+  driven by `round` in `sample.json`. Seats run clockwise from the top in EU protocol order. Named groups
   per country: `vlag-XX`, `figuur-XX`, `tafeldeel-XX` (`tafelblad-XX`, `tafelrand-XX`), `tafelitems-XX`, `stoel-XX`.
   svg2rml ids are 10000-99999 (from the names); hand-made ids are below 1300 and from 100000.
 - A sample with more than eight controls gets short snippets: only the values that differ from the default, plus

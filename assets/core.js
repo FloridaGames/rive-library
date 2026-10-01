@@ -180,6 +180,44 @@
     return (o && o.duration) || (s.recipe && s.recipe.duration) || 700;
   }
 
+  /* ---------- a vote round (samples with "round" in sample.json) ---------- */
+
+  /* The same round the library page plays, as code to copy: everyone back to the reset value, then member by member
+     in `round.order`: first the pending value (the voting moment), after `think` ms the vote, drawn at random. */
+  function roundPick(round) {
+    var keys = Object.keys(round.outcomes), total = 0, acc = 0;
+    keys.forEach(function (k) { total += round.outcomes[k]; });
+    var parts = keys.slice(0, -1).map(function (k) { acc += round.outcomes[k]; return 'x < ' + round3(acc / total) + ' ? ' + q(k) + ' : '; });
+    return '() => { const x = Math.random(); return ' + parts.join('') + q(keys[keys.length - 1]) + '; }';
+  }
+  function round3(v) { return Math.round(v * 1000) / 1000; }
+  function roundOrder(round) {
+    var lines = [], o = round.order;
+    for (var i = 0; i < o.length; i += 14) lines.push('  ' + o.slice(i, i + 14).map(q).join(', ') + ',');
+    return lines;
+  }
+  function roundJs(s, vmExpr, ts) {
+    var r = s.round, bang = ts ? '!' : '';
+    var step = (r.think || 800) + (r.pause || 200), start = r.start || 700;
+    var lines = [];
+    lines.push('const VOTE_ORDER = [');
+    lines = lines.concat(roundOrder(r));
+    lines.push('];');
+    lines.push('const pickVote = ' + roundPick(r) + ';');
+    return lines.concat([
+      (ts ? 'const holdVote = () => {' : 'function holdVote() {'),
+      '  const vm = ' + vmExpr + ';',
+      '  if (!vm) return;',
+      '  VOTE_ORDER.forEach((c) => { vm.enum(c)' + bang + '.value = ' + q(r.reset) + '; });',
+      '  VOTE_ORDER.forEach((c, i) => {',
+      '    const at = ' + start + ' + i * ' + step + ';',
+      '    setTimeout(() => { vm.enum(c)' + bang + '.value = ' + q(r.pending) + '; }, at);',
+      '    setTimeout(() => { vm.enum(c)' + bang + '.value = pickVote(); }, at + ' + (r.think || 800) + ');',
+      '  });',
+      (ts ? '};' : '}'),
+    ]);
+  }
+
   /* ---------- plain HTML ---------- */
 
   function html(s, base, values, o) {
@@ -220,6 +258,12 @@
       js.push('// Triggers: call these whenever you like (after onLoad).');
       js = js.concat(pad(trig.map(function (c) { return ['// ' + fireLine(c, s, rv, false), c.label || '']; })));
     }
+    if (s.round) {
+      js.push('');
+      js.push('// A vote round, like the real thing: everyone back to ' + q(s.round.reset) + ', then member by member');
+      js.push('// (' + s.round.order.slice(0, 3).join(', ') + ' ... in order): first ' + q(s.round.pending) + ', then the vote.');
+      js = js.concat(roundJs(s, rv + '.viewModelInstance', false));
+    }
 
     var out = [];
     out.push('<!doctype html>');
@@ -233,6 +277,7 @@
     out.push('  <!-- ' + esc(s.title) + ' · from the Rive Library: ' + pageUrl(s, base));
     out.push('       To use it in your own page, copy the <canvas> and both <script> tags.');
     out.push('       Load rive.js only once per page, however many animations you add. -->');
+    if (s.round) out.push('  <p><button type="button" onclick="holdVote()">' + esc(s.round.label || 'Hold a vote') + '</button></p>');
     out.push('  <canvas id="' + esc(s.id) + '" style="display: block; width: ' + width + 'px; max-width: 100%; aspect-ratio: ' + s.width + ' / ' + s.height + ';' + (recipe ? ' cursor: pointer;' : '') + '"></canvas>');
     out.push('');
     out.push('  <script src="' + runtimeUrl(o.runtime) + '"></script>');
@@ -287,14 +332,22 @@
       out.push('  // Triggers: call these from any event handler.');
       out = out.concat(indent(pad(trig.map(function (c) { return ['// ' + fireLine(c, s, 'rive', true), c.label || '']; })), 2));
     }
+    if (s.round) {
+      out.push('');
+      out.push('  // A vote round, like the real thing: everyone back to ' + q(s.round.reset) + ', then member by member: first ' + q(s.round.pending) + ', then the vote.');
+      out = out.concat(indent(roundJs(s, 'rive?.viewModelInstance', true), 2));
+    }
     out.push('');
     out.push('  return (');
-    out.push('    <div');
-    if (recipe) out.push('      onClick={() => rive && drawOn(rive, ' + q(recipe.property) + ', ' + ms + ')}');
-    out.push('      style={{ width, maxWidth: "100%", aspectRatio: "' + s.width + ' / ' + s.height + '"' + (recipe ? ', cursor: "pointer"' : '') + ' }}');
-    out.push('    >');
-    out.push('      <RiveComponent />');
-    out.push('    </div>');
+    if (s.round) out.push('    <>', '      <button type="button" onClick={holdVote}>' + esc(s.round.label || 'Hold a vote') + '</button>');
+    var ind = s.round ? '  ' : '';
+    out.push(ind + '    <div');
+    if (recipe) out.push(ind + '      onClick={() => rive && drawOn(rive, ' + q(recipe.property) + ', ' + ms + ')}');
+    out.push(ind + '      style={{ width, maxWidth: "100%", aspectRatio: "' + s.width + ' / ' + s.height + '"' + (recipe ? ', cursor: "pointer"' : '') + ' }}');
+    out.push(ind + '    >');
+    out.push(ind + '      <RiveComponent />');
+    out.push(ind + '    </div>');
+    if (s.round) out.push('    </>');
     out.push('  );');
     out.push('}');
     if (recipe) { out.push(''); out = out.concat(drawOnTs()); }
@@ -315,6 +368,7 @@
     });
     if (o.background && o.background !== 'transparent') p.push('bg=' + encodeURIComponent(String(o.background).replace('#', '')));
     if (o.every) p.push('every=' + encodeURIComponent(o.every));
+    if (o.round && s.round) p.push('round=1');
     return base + 'embed.html?' + p.join('&');
   }
 

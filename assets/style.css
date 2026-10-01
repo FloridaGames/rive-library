@@ -259,6 +259,25 @@ main { flex: 1; }
 .seg [data-val="yes"][aria-pressed="true"] { background: #2e9e5b; color: #fff; }
 .seg [data-val="no"][aria-pressed="true"] { background: #d7263d; color: #fff; }
 .seg [data-val="abstain"][aria-pressed="true"] { background: #f0a21f; color: #1b1300; }
+.seg [data-val="voting"][aria-pressed="true"] { background: #0e2879; color: #fff; }
+
+/* a vote round: the button and the tally sit on top of the preview, so the whole table stays in view */
+.round-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding: 12px 14px; border-bottom: 1px solid var(--line); background: var(--surface); }
+.round-bar .btn-primary { font-size: 15px; padding: 11px 18px; }
+.round-bar .btn-primary.running { background: var(--surface-2); color: var(--ink); border-color: var(--line-strong); }
+.tally { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; font-size: 14px; color: var(--muted); }
+.tally .t b { font-size: 18px; color: var(--ink); font-variant-numeric: tabular-nums; margin-right: 2px; }
+.tally .t::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
+.tally .t-yes::before { background: #2e9e5b; }
+.tally .t-no::before { background: #d7263d; }
+.tally .t-abstain::before { background: #f0a21f; }
+.tally .t-left::before { display: none; }
+.tally .t-left { font-weight: 600; color: var(--ink); }
+.round-bar .speed { margin-left: auto; font-size: 13.5px; color: var(--muted); display: inline-flex; align-items: center; gap: 6px; }
+.round-bar .speed select { font: 13.5px var(--font); padding: 5px 6px; border: 1px solid var(--line-strong); border-radius: 7px; background: var(--surface); color: var(--ink); }
+.round-result { margin: 0; padding: 11px 14px; font-size: 14.5px; border-bottom: 1px solid var(--line); }
+.round-result.adopted { background: color-mix(in srgb, #2e9e5b 14%, var(--surface)); }
+.round-result.rejected { background: color-mix(in srgb, #d7263d 12%, var(--surface)); }
 dl.facts { display: grid; grid-template-columns: auto 1fr; gap: 7px 14px; margin: 0; font-size: 14px; }
 dl.facts dt { color: var(--muted); }
 dl.facts dd { margin: 0; overflow-wrap: anywhere; }

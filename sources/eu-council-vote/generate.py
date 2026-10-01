@@ -21,7 +21,8 @@ Personen. This script
      and everything goes back to the drawing as it was when the vote is set to none.
 
 One enum per member state in the view model, named after its country code in lower case (`be`, `de`, ...):
-none, yes, no, abstain. Each country has its own state-machine layer with those four states; every state moves to
+none, voting, yes, no, abstain. `voting` is the moment of voting: the flag lifts and waves, the seat pulses gold and
+rings ripple out of it, until the page sets the actual vote. Each country has its own state-machine layer with those four states; every state moves to
 the other three on the enum with a short cross-fade, and plays a one-shot pop.
 
 The generated RML is a build product (8+ MB): the SVG and this script are the source. Standard library only."""
@@ -58,9 +59,12 @@ NAMES = {
     'MT': 'Malta', 'NL': 'Netherlands', 'PL': 'Poland', 'PT': 'Portugal', 'RO': 'Romania', 'SK': 'Slovakia',
     'SI': 'Slovenia', 'ES': 'Spain', 'SE': 'Sweden',
 }
-VOTES = ['none', 'yes', 'no', 'abstain']
+VOTES = ['none', 'voting', 'yes', 'no', 'abstain']   # voting: "this country is voting right now", before its vote shows
 VOTE_RGB = {'yes': '2E9E5B', 'no': 'D7263D', 'abstain': 'F0A21F'}
-GLOW_RGB = {'none': 'FFFFFF', 'yes': '3FCF7A', 'no': 'F2445A', 'abstain': 'FFB52E'}
+GLOW_RGB = {'none': 'FFFFFF', 'voting': 'FFB300', 'yes': '3FCF7A', 'no': 'F2445A', 'abstain': 'FFB52E'}
+GOLD = 'F2B417'                  # the colour of 'voting'
+VOTING_FLAG = 1.45              # how far a flag lifts while its country is voting
+RIPPLE = 70.0                   # radius of the ring round a person, before it grows
 RIM_TINT, TOP_TINT = 1.0, 0.24  # how much of the vote colour the rim and the table top take
 
 
@@ -177,13 +181,26 @@ def open_path(points, name, sid):
             % (name, sid, ID(), v, stroke_xml('FFFFFFFF', 4.2)))
 
 
+def dot(x, sid):
+    return ('<Shape x="%s" opacity="0" name="dot" id="%s"><Ellipse width="5" height="5" name="Path" id="%s"/>'
+            '<Fill name="Fill" id="%s"><SolidColor colorValue="FFFFFFFF" name="Color" id="%s"/></Fill></Shape>' % (f(x), sid, ID(), ID(), ID()))
+
+
+def ripple(code, x, y, ids):
+    """a ring round the person that grows and fades: in a loop while the country is voting, once when it has voted"""
+    return [el('<Shape x="%s" y="%s" opacity="0" name="ripple-%s%s" id="%s"><Ellipse width="%s" height="%s" name="Path" id="%s"/>'
+               '<Stroke thickness="7" name="Stroke" id="%s"><SolidColor colorValue="FFFFB300" name="Color" id="%s"/></Stroke></Shape>'
+               % (f(x), f(y), code, suffix, ids['ripple' + suffix], f(2 * RIPPLE), f(2 * RIPPLE), ID(), ID(), ids['ripplec' + suffix]))
+            for suffix in ('', '2')]
+
+
 def badge(code, x, y, ids):
-    return el('<Node x="%s" y="%s" opacity="0" name="badge-%s" id="%s">%s<Node name="cross" id="%s">%s%s</Node>%s'
+    return el('<Node x="%s" y="%s" opacity="0" name="badge-%s" id="%s">%s%s%s%s<Node name="cross" id="%s">%s%s</Node>%s'
               '<Shape name="disc" id="%s"><Ellipse width="%s" height="%s" name="Path" id="%s"/>%s'
               '<Fill name="Fill" id="%s"><SolidColor colorValue="FF2E9E5B" name="Color" id="%s"/></Fill></Shape>'
               '<Shape y="2.5" opacity="0.22" name="shadow" id="%s"><Ellipse width="%s" height="%s" name="Path" id="%s"/>'
               '<Fill name="Fill" id="%s"><SolidColor colorValue="FF0B1220" name="Color" id="%s"/></Fill></Shape></Node>'
-              % (f(x), f(y), code, ids['badge'],
+              % (f(x), f(y), code, ids['badge'], dot(-7.0, ids['d1']), dot(0.0, ids['d2']), dot(7.0, ids['d3']),
                  open_path([(-7.6, 0.4), (-2.5, 5.6), (7.9, -5.8)], 'check', ids['check']),
                  ids['cross'], open_path([(-5.9, -5.9), (5.9, 5.9)], 'stroke-1', ID()), open_path([(-5.9, 5.9), (5.9, -5.9)], 'stroke-2', ID()),
                  open_path([(-7.2, 0.0), (7.2, 0.0)], 'dash', ids['dash']),
@@ -207,6 +224,7 @@ def keyed(obj, props):
 
 OUT = (0.2, 0.9, 0.3, 1.0)       # ease-out
 BACK = (0.3, 1.7, 0.5, 1.0)      # ease-out with an overshoot: the pop
+INOUT = (0.45, 0.0, 0.55, 1.0)   # ease-in-out: the breathing of a loop
 
 
 def pop(frames, rest, peak_ease=BACK):
@@ -214,47 +232,85 @@ def pop(frames, rest, peak_ease=BACK):
     return [kf(0, 1.0), kf(frames, rest, peak_ease)]
 
 
+def hold(v, color=False):
+    return [kf(0, v, color=color)]
+
+
+def wave(a, b, n=60, ease=INOUT):
+    """a -> b -> a over n frames: one breath of a loop"""
+    return [kf(0, a), kf(n // 2, b, ease), kf(n, a, ease)]
+
+
 def animation(code, vote, ids, aid, orig):
-    on = vote != 'none'
-    rgb = VOTE_RGB.get(vote)
+    """one state of one country. Every state keys exactly the same properties, so a cross-fade between any two of
+    them is clean:
+      none     the drawing as it is
+      voting   a loop: the flag lifts and waves, the person breathes, gold rings ripple out of the seat, the rim
+               pulses gold and the badge shows three dots, one after the other, like someone typing
+      yes/no/abstain   the flag lands at 1.6x, the seat takes the vote colour, one ring bursts out in that colour
+               and the badge pops in with its check, cross or dash"""
+    k = {}                                              # (object, propertyKey) -> keyframes
     glow = GLOW_RGB[vote]
-    rim_fill = mix(orig['rim_fill'], rgb, RIM_TINT) if on else orig['rim_fill']
-    rim_stroke = darker(rim_fill, 0.18) if on else orig['rim_stroke']
-    top_fill = mix(orig['top_fill'], rgb, TOP_TINT) if on else orig['top_fill']
-    top_stroke = mix(orig['top_stroke'], rgb, TOP_TINT) if on else orig['top_stroke']
-    if on:
-        blocks = [
-            keyed(ids['flag'], [(16, pop(16, FLAG_SCALE)), (17, pop(16, FLAG_SCALE))]),
-            keyed(ids['flagglow'], [(18, [kf(0, 0), kf(14, 1, OUT)])]),
-            keyed(ids['person'], [(16, pop(14, PERSON_SCALE)), (17, pop(14, PERSON_SCALE))]),
-            keyed(ids['personglow'], [(18, [kf(0, 0), kf(18, 1, OUT)])]),
-            keyed(ids['badge'], [(18, [kf(0, 0), kf(7, 1, OUT)]),
-                                 (16, [kf(0, 0.3), kf(13, 1.0, BACK)]),
-                                 (17, [kf(0, 0.3), kf(13, 1.0, BACK)])]),
-            keyed(ids['rimc'], [(37, [kf(0, 'FF' + orig['rim_fill'], color=True), kf(12, 'FF' + rim_fill, OUT, color=True)])]),
-            keyed(ids['tintc'], [(37, [kf(0, 'FF' + orig['top_fill'], color=True), kf(12, 'FF' + top_fill, OUT, color=True)])]),
-        ]
+    dots = [hold(0), hold(0), hold(0)]
+    if vote == 'none':
+        k.update({('flag', 16): hold(1.0), ('flag', 17): hold(1.0), ('flag', 15): hold(0.0), ('flagglow', 18): hold(0),
+                  ('person', 16): hold(1.0), ('person', 17): hold(1.0), ('personglow', 18): hold(0),
+                  ('badge', 18): hold(0), ('badge', 16): hold(0.3), ('badge', 17): hold(0.3),
+                  ('ripple', 16): hold(0.6), ('ripple', 17): hold(0.6), ('ripple', 18): hold(0),
+                  ('ripple2', 16): hold(0.6), ('ripple2', 17): hold(0.6), ('ripple2', 18): hold(0),
+                  ('personglow', 16): hold(1.0), ('personglow', 17): hold(1.0)})
+        rim, rim_s, top, top_s, disc, ring = orig['rim_fill'], orig['rim_stroke'], orig['top_fill'], orig['top_stroke'], '9AA3AD', 'FFC93C'
+        duration, loop = 1, ''
+    elif vote == 'voting':
+        k.update({('flag', 16): wave(VOTING_FLAG, VOTING_FLAG + 0.16), ('flag', 17): wave(VOTING_FLAG, VOTING_FLAG + 0.16),
+                  ('flag', 15): [kf(0, 0.0), kf(15, 0.24, INOUT), kf(45, -0.24, INOUT), kf(60, 0.0, INOUT)],
+                  ('flagglow', 18): hold(1),
+                  ('person', 16): wave(1.06, 1.15), ('person', 17): wave(1.06, 1.15),
+                  ('personglow', 18): wave(0.85, 1.0), ('personglow', 16): wave(1.35, 1.6), ('personglow', 17): wave(1.35, 1.6),
+                  ('badge', 18): hold(1), ('badge', 16): wave(1.0, 1.15), ('badge', 17): wave(1.0, 1.15),
+                  # two rings, half a beat apart, so there is always one on its way out
+                  ('ripple', 16): [kf(0, 0.6), kf(60, 2.0)], ('ripple', 17): [kf(0, 0.6), kf(60, 2.0)],
+                  ('ripple', 18): [kf(0, 1.0), kf(60, 0)],
+                  ('ripple2', 16): [kf(0, 1.3), kf(30, 2.0), kf(31, 0.6), kf(60, 1.3)],
+                  ('ripple2', 17): [kf(0, 1.3), kf(30, 2.0), kf(31, 0.6), kf(60, 1.3)],
+                  ('ripple2', 18): [kf(0, 0.5), kf(30, 0), kf(31, 1.0), kf(60, 0.5)]})
+        dots = [[kf(0, 1), kf(20, 0.3), kf(60, 0.3)], [kf(0, 0.3), kf(20, 1), kf(40, 0.3), kf(60, 0.3)], [kf(0, 0.3), kf(40, 1), kf(60, 0.3)]]
+        rim, rim_s, top, top_s, disc, ring = GOLD, darker(GOLD, 0.2), mix(orig['top_fill'], GOLD, 0.3), mix(orig['top_stroke'], GOLD, 0.3), '0E2879', 'FFB300'
+        k[('rimc', 37)] = [kf(0, 'FF' + GOLD, color=True), kf(30, 'FF' + mix(GOLD, 'FFF3B0', 0.6), INOUT, color=True), kf(60, 'FF' + GOLD, INOUT, color=True)]
+        duration, loop = 60, ' loopValue="loop"'
     else:
-        blocks = [
-            keyed(ids['flag'], [(16, [kf(0, 1.0)]), (17, [kf(0, 1.0)])]),
-            keyed(ids['flagglow'], [(18, [kf(0, 0)])]),
-            keyed(ids['person'], [(16, [kf(0, 1.0)]), (17, [kf(0, 1.0)])]),
-            keyed(ids['personglow'], [(18, [kf(0, 0)])]),
-            keyed(ids['badge'], [(18, [kf(0, 0)]), (16, [kf(0, 0.3)]), (17, [kf(0, 0.3)])]),
-            keyed(ids['rimc'], [(37, [kf(0, 'FF' + rim_fill, color=True)])]),
-            keyed(ids['tintc'], [(37, [kf(0, 'FF' + top_fill, color=True)])]),
-        ]
-    blocks += [
-        keyed(ids['rims'], [(37, [kf(0, 'FF' + rim_stroke, color=True)])]),
-        keyed(ids['tints'], [(37, [kf(0, 'FF' + top_stroke, color=True)])]),
-        keyed(ids['discc'], [(37, [kf(0, 'FF' + (rgb or '9AA3AD'), color=True)])]),
-        keyed(ids['check'], [(18, [kf(0, 1 if vote == 'yes' else 0)])]),
-        keyed(ids['cross'], [(18, [kf(0, 1 if vote == 'no' else 0)])]),
-        keyed(ids['dash'], [(18, [kf(0, 1 if vote == 'abstain' else 0)])]),
-    ]
+        rgb = VOTE_RGB[vote]
+        k.update({('flag', 16): pop(16, FLAG_SCALE), ('flag', 17): pop(16, FLAG_SCALE), ('flag', 15): hold(0.0),
+                  ('flagglow', 18): [kf(0, 0), kf(14, 1, OUT)],
+                  ('person', 16): pop(14, PERSON_SCALE), ('person', 17): pop(14, PERSON_SCALE), ('personglow', 18): [kf(0, 0), kf(18, 1, OUT)],
+                  ('badge', 18): [kf(0, 0), kf(7, 1, OUT)], ('badge', 16): [kf(0, 0.3), kf(13, 1.0, BACK)], ('badge', 17): [kf(0, 0.3), kf(13, 1.0, BACK)],
+                  ('ripple', 16): [kf(0, 0.6), kf(30, 2.0, OUT)], ('ripple', 17): [kf(0, 0.6), kf(30, 2.0, OUT)],
+                  ('ripple', 18): [kf(0, 1.0), kf(30, 0)],
+                  ('ripple2', 16): hold(0.6), ('ripple2', 17): hold(0.6), ('ripple2', 18): hold(0),
+                  ('personglow', 16): [kf(0, 1.4), kf(20, 1.0, OUT)], ('personglow', 17): [kf(0, 1.4), kf(20, 1.0, OUT)]})
+        rim = mix(orig['rim_fill'], rgb, RIM_TINT)
+        rim_s, top = darker(rim, 0.18), mix(orig['top_fill'], rgb, TOP_TINT)
+        top_s, disc, ring = mix(orig['top_stroke'], rgb, TOP_TINT), rgb, 'FF' + mix(rgb, 'FFFFFF', 0.15)
+        k[('rimc', 37)] = [kf(0, 'FF' + orig['rim_fill'], color=True), kf(12, 'FF' + rim, OUT, color=True)]
+        k[('tintc', 37)] = [kf(0, 'FF' + orig['top_fill'], color=True), kf(12, 'FF' + top, OUT, color=True)]
+        duration, loop = 30, ''
+    k.setdefault(('rimc', 37), hold('FF' + rim, True))
+    k.setdefault(('tintc', 37), hold('FF' + top, True))
+    k.update({('rims', 37): hold('FF' + rim_s, True), ('tints', 37): hold('FF' + top_s, True),
+              ('discc', 37): hold('FF' + disc, True), ('ripplec', 37): hold(ring if len(ring) == 8 else 'FF' + ring, True),
+              ('ripplec2', 37): hold(ring if len(ring) == 8 else 'FF' + ring, True),
+              ('check', 18): hold(1 if vote == 'yes' else 0), ('cross', 18): hold(1 if vote == 'no' else 0),
+              ('dash', 18): hold(1 if vote == 'abstain' else 0),
+              ('d1', 18): dots[0], ('d2', 18): dots[1], ('d3', 18): dots[2]})
     for gid, alpha in (('fg0', 'E6'), ('fg1', '8C'), ('fg2', '00'), ('pg0', 'D9'), ('pg1', '73'), ('pg2', '00')):
-        blocks.append(keyed(ids[gid], [(38, [kf(0, alpha + glow, color=True)])]))
-    return '<LinearAnimation duration="%d" name="%s-%s" id="%s">%s</LinearAnimation>' % (22 if on else 1, code.lower(), vote, aid, ''.join(blocks))
+        k[(gid, 38)] = hold(alpha + glow, True)
+
+    objects = {}
+    for (obj, key), frames in k.items():
+        objects.setdefault(ids[obj], []).append((key, frames))
+    blocks = [keyed(obj, props) for obj, props in objects.items()]
+    return ('<LinearAnimation duration="%d"%s name="%s-%s" id="%s">%s</LinearAnimation>'
+            % (duration, loop, code.lower(), vote, aid, ''.join(blocks)))
 
 
 def build(countries):
@@ -291,7 +347,7 @@ def build(countries):
     for i, code in enumerate(countries):
         flag, person = nodes['vlag-' + code], nodes['figuur-' + code]
         top, rim = nodes['tafelblad-' + code], nodes['tafelrand-' + code]
-        ids = {k: ID() for k in ('flagglow', 'personglow', 'badge', 'disc', 'discc', 'check', 'cross', 'dash',
+        ids = {k: ID() for k in ('flagglow', 'personglow', 'badge', 'disc', 'discc', 'check', 'cross', 'dash', 'd1', 'd2', 'd3', 'ripple', 'ripplec', 'ripple2', 'ripplec2',
                                  'fg0', 'fg1', 'fg2', 'pg0', 'pg1', 'pg2')}
         ids['flag'], ids['person'] = flag.get('id'), person.get('id')
         ids['tintc'], ids['tints'] = solid(top, 'Fill').get('id'), solid(top, 'Stroke').get('id')
@@ -303,6 +359,7 @@ def build(countries):
         flag.append(glow_shape('flagglow-' + code, 0.0, 0.0, FLAG_GLOW, {'glow': ids['flagglow'], 'g0': ids['fg0'], 'g1': ids['fg1'], 'g2': ids['fg2']}))
         # the person's glow in its own layer under the people and the flags, so it never covers a neighbour
         px, py = absolute['figuur-' + code]
+        for ring in ripple(code, px, py, ids): glows.append(ring)
         glows.append(glow_shape('glow-' + code, px, py, PERSON_GLOW, {'glow': ids['personglow'], 'g0': ids['pg0'], 'g1': ids['pg1'], 'g2': ids['pg2']}))
         # the badge on the line from the centre through the flag
         fx, fy = absolute['vlag-' + code]
@@ -318,12 +375,12 @@ def build(countries):
             aid = '%d:%d' % (CLIENT, 700 + i * 10 + k)
             anims.append(animation(code, v, ids, aid, orig))
             trans = ''.join(
-                '<StateTransition stateToId="%s" duration="160" id="%s"><TransitionViewModelCondition id="%s">'
+                '<StateTransition stateToId="%s" duration="%d" id="%s"><TransitionViewModelCondition id="%s">'
                 '<TransitionPropertyViewModelComparator id="%s"><BindablePropertyEnum id="%s">'
                 '<DataBindContext sourcePathIds="%d:40-%s" propertyKey="637" id="%s"/></BindablePropertyEnum>'
                 '</TransitionPropertyViewModelComparator><TransitionValueEnumComparator value="%s" id="%s"/>'
                 '</TransitionViewModelCondition></StateTransition>'
-                % (state_ids[w], ID(), ID(), ID(), ID(), CLIENT, prop, ID(), enum_ids[w], ID())
+                % (state_ids[w], 220 if w == 'voting' else 120 if v == 'voting' else 160, ID(), ID(), ID(), ID(), CLIENT, prop, ID(), enum_ids[w], ID())
                 for w in VOTES if w != v)
             states.append('<AnimationState x="%d" y="%d" animationId="%s" id="%s">%s</AnimationState>'
                           % (150 + k * 220, 120, aid, state_ids[v], trans))

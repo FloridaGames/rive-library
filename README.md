@@ -13,7 +13,7 @@ changes it through a few named controls. Nobody has to open Rive to use one.
 | | |
 |---|---|
 | 2 logos | European Commission (EU) and Tilburg University: an entrance on load, a highlight on click, adjustable timing |
-| 1 illustration | EU Council vote: the Council of the EU round a table, all 27 member states; code sets each one to yes, no or abstain, its flag grows and its seat lights up |
+| 1 illustration | EU Council vote: the Council of the EU round a table, all 27 member states. "Hold a vote" plays a whole round country by country, with the outcome under qualified majority; code can set each vote itself |
 | 17 icons | The animated Lucide icons from the EU Lobby Game: they draw themselves in; colour and stroke width adjustable |
 
 ## Using one

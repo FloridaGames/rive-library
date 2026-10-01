@@ -1,8 +1,8 @@
 {
   "id": "eu-council-vote",
   "title": "EU Council vote",
-  "summary": "The Council of the EU round a table, all 27 member states. Your code sets each one to yes, no or abstain: its flag grows and its seat lights up.",
-  "description": "The Council of the EU as a vector illustration, 27 members round a table, one per member state. Set a country to yes, no or abstain and it comes alive: its flag grows to 1.6 times its size with a glow in the vote colour, the member leans in with a soft glow behind, the inner rim of its table segment turns green, red or amber, and a badge with a check, cross or dash pops in. Set it back to none and everything returns to the drawing. Every country is an enum named after its two-letter code in lower case, so a whole vote is a few lines of code. Every person, chair, table segment and flag is a named group in the file (vlag-BE, figuur-BE, tafeldeel-BE), ready for more animation in the Rive editor.",
+  "summary": "The Council of the EU round a table, all 27 member states. Hold a vote: country by country the seat lights up while it votes, then shows yes, no or abstain.",
+  "description": "The Council of the EU as a vector illustration, 27 members round a table, one per member state. \"Hold a vote\" plays a whole round like the real thing: everyone back to none, then country by country in protocol order (clockwise round the table) the seat lights up while it votes, gold rings ripple out, the flag lifts and waves, and then its vote lands: the flag settles at 1.6 times its size, the table rim turns green, red or amber and a badge with a check, cross or dash pops in. At the end the outcome under qualified majority. From code, every country is an enum named after its two-letter code in lower case: none, voting, yes, no or abstain. Every person, chair, table segment and flag is a named group in the file (vlag-BE, figuur-BE, tafeldeel-BE), ready for more animation in the Rive editor.",
   "category": "illustration",
   "tags": [
     "eu",
@@ -45,7 +45,10 @@
     "slovenia",
     "spain",
     "sweden",
-    "vector"
+    "vector",
+    "vote round",
+    "roll call",
+    "simulation"
   ],
   "file": "eu-council-vote.riv",
   "poster": "eu-council-vote.webp",
@@ -63,11 +66,12 @@
       "default": "none",
       "values": [
         "none",
+        "voting",
         "yes",
         "no",
         "abstain"
       ],
-      "description": "How Austria votes: none (no highlight), yes, no or abstain."
+      "description": "How Austria votes: none (no highlight), voting (the moment of voting: the seat pulses until the vote shows), yes, no or abstain."
     },
     {
       "name": "be",
@@ -76,11 +80,12 @@
       "default": "none",
       "values": [
         "none",
+        "voting",
         "yes",
         "no",
         "abstain"
       ],
-      "description": "How Belgium votes: none (no highlight), yes, no or abstain."
+      "description": "How Belgium votes: none (no highlight), voting (the moment of voting: the seat pulses until the vote shows), yes, no or abstain."
     },
     {
       "name": "bg",
@@ -89,11 +94,12 @@
       "default": "none",
       "values": [
         "none",
+        "voting",
         "yes",
         "no",
         "abstain"
       ],
-      "description": "How Bulgaria votes: none (no highlight), yes, no or abstain."
+      "description": "How Bulgaria votes: none (no highlight), voting (the moment of voting: the seat pulses until the vote shows), yes, no or abstain."
     },
     {
       "name": "hr",
@@ -102,11 +108,12 @@
       "default": "none",
       "values": [
         "none",
+        "voting",
         "yes",
         "no",
         "abstain"
       ],
-      "description": "How Croatia votes: none (no highlight), yes, no or abstain."
+      "description": "How Croatia votes: none (no highlight), voting (the moment of voting: the seat pulses until the vote shows), yes, no or abstain."
     },
     {
       "name": "cy",
@@ -115,11 +122,12 @@
       "default": "none",
       "values": [
         "none",
+        "voting",
         "yes",
         "no",
         "abstain"
       ],
-      "description": "How Cyprus votes: none (no highlight), yes, no or abstain."
+      "description": "How Cyprus votes: none (no highlight), voting (the moment of voting: the seat pulses until the vote shows), yes, no or abstain."
     },
     {
       "name": "cz",
@@ -128,11 +136,12 @@
       "default": "none",
       "values": [
         "none",
+        "voting",
         "yes",
         "no",
         "abstain"
       ],
-      "description": "How Czechia votes: none (no highlight), yes, no or abstain."
+      "description": "How Czechia votes: none (no highlight), voting (the moment of voting: the seat pulses until the vote shows), yes, no or abstain."
     },
     {
       "name": "dk",
@@ -141,11 +150,12 @@
       "default": "none",
       "values": [
         "none",
+        "voting",
         "yes",
         "no",
         "abstain"
       ],
-      "description": "How Denmark votes: none (no highlight), yes, no or abstain."
+      "description": "How Denmark votes: none (no highlight), voting (the moment of voting: the seat pulses until the vote shows), yes, no or abstain."
     },
     {
       "name": "ee",
@@ -154,11 +164,12 @@
       "default": "none",
       "values": [
         "none",
+        "voting",
         "yes",
         "no",
         "abstain"
       ],
-      "description": "How Estonia votes: none (no highlight), yes, no or abstain."
+      "description": "How Estonia votes: none (no highlight), voting (the moment of voting: the seat pulses until the vote shows), yes, no or abstain."
     },
     {
       "name": "fi",
@@ -167,11 +178,12 @@
       "default": "none",
       "values": [
         "none",
+        "voting",
         "yes",
         "no",
         "abstain"
       ],
-      "description": "How Finland votes: none (no highlight), yes, no or abstain."
+      "description": "How Finland votes: none (no highlight), voting (the moment of voting: the seat pulses until the vote shows), yes, no or abstain."
     },
     {
       "name": "fr",
@@ -180,11 +192,12 @@
       "default": "none",
       "values": [
         "none",
+        "voting",
         "yes",
         "no",
         "abstain"
       ],
-      "description": "How France votes: none (no highlight), yes, no or abstain."
+      "description": "How France votes: none (no highlight), voting (the moment of voting: the seat pulses until the vote shows), yes, no or abstain."
     },
     {
       "name": "de",
@@ -193,11 +206,12 @@
       "default": "none",
       "values": [
         "none",
+        "voting",
         "yes",
         "no",
         "abstain"
       ],
-      "description": "How Germany votes: none (no highlight), yes, no or abstain."
+      "description": "How Germany votes: none (no highlight), voting (the moment of voting: the seat pulses until the vote shows), yes, no or abstain."
     },
     {
       "name": "gr",
@@ -206,11 +220,12 @@
       "default": "none",
       "values": [
         "none",
+        "voting",
         "yes",
         "no",
         "abstain"
       ],
-      "description": "How Greece votes: none (no highlight), yes, no or abstain."
+      "description": "How Greece votes: none (no highlight), voting (the moment of voting: the seat pulses until the vote shows), yes, no or abstain."
     },
     {
       "name": "hu",
@@ -219,11 +234,12 @@
       "default": "none",
       "values": [
         "none",
+        "voting",
         "yes",
         "no",
         "abstain"
       ],
-      "description": "How Hungary votes: none (no highlight), yes, no or abstain."
+      "description": "How Hungary votes: none (no highlight), voting (the moment of voting: the seat pulses until the vote shows), yes, no or abstain."
     },
     {
       "name": "ie",
@@ -232,11 +248,12 @@
       "default": "none",
       "values": [
         "none",
+        "voting",
         "yes",
         "no",
         "abstain"
       ],
-      "description": "How Ireland votes: none (no highlight), yes, no or abstain."
+      "description": "How Ireland votes: none (no highlight), voting (the moment of voting: the seat pulses until the vote shows), yes, no or abstain."
     },
     {
       "name": "it",
@@ -245,11 +262,12 @@
       "default": "none",
       "values": [
         "none",
+        "voting",
         "yes",
         "no",
         "abstain"
       ],
-      "description": "How Italy votes: none (no highlight), yes, no or abstain."
+      "description": "How Italy votes: none (no highlight), voting (the moment of voting: the seat pulses until the vote shows), yes, no or abstain."
     },
     {
       "name": "lv",
@@ -258,11 +276,12 @@
       "default": "none",
       "values": [
         "none",
+        "voting",
         "yes",
         "no",
         "abstain"
       ],
-      "description": "How Latvia votes: none (no highlight), yes, no or abstain."
+      "description": "How Latvia votes: none (no highlight), voting (the moment of voting: the seat pulses until the vote shows), yes, no or abstain."
     },
     {
       "name": "lt",
@@ -271,11 +290,12 @@
       "default": "none",
       "values": [
         "none",
+        "voting",
         "yes",
         "no",
         "abstain"
       ],
-      "description": "How Lithuania votes: none (no highlight), yes, no or abstain."
+      "description": "How Lithuania votes: none (no highlight), voting (the moment of voting: the seat pulses until the vote shows), yes, no or abstain."
     },
     {
       "name": "lu",
@@ -284,11 +304,12 @@
       "default": "none",
       "values": [
         "none",
+        "voting",
         "yes",
         "no",
         "abstain"
       ],
-      "description": "How Luxembourg votes: none (no highlight), yes, no or abstain."
+      "description": "How Luxembourg votes: none (no highlight), voting (the moment of voting: the seat pulses until the vote shows), yes, no or abstain."
     },
     {
       "name": "mt",
@@ -297,11 +318,12 @@
       "default": "none",
       "values": [
         "none",
+        "voting",
         "yes",
         "no",
         "abstain"
       ],
-      "description": "How Malta votes: none (no highlight), yes, no or abstain."
+      "description": "How Malta votes: none (no highlight), voting (the moment of voting: the seat pulses until the vote shows), yes, no or abstain."
     },
     {
       "name": "nl",
@@ -310,11 +332,12 @@
       "default": "none",
       "values": [
         "none",
+        "voting",
         "yes",
         "no",
         "abstain"
       ],
-      "description": "How Netherlands votes: none (no highlight), yes, no or abstain."
+      "description": "How Netherlands votes: none (no highlight), voting (the moment of voting: the seat pulses until the vote shows), yes, no or abstain."
     },
     {
       "name": "pl",
@@ -323,11 +346,12 @@
       "default": "none",
       "values": [
         "none",
+        "voting",
         "yes",
         "no",
         "abstain"
       ],
-      "description": "How Poland votes: none (no highlight), yes, no or abstain."
+      "description": "How Poland votes: none (no highlight), voting (the moment of voting: the seat pulses until the vote shows), yes, no or abstain."
     },
     {
       "name": "pt",
@@ -336,11 +360,12 @@
       "default": "none",
       "values": [
         "none",
+        "voting",
         "yes",
         "no",
         "abstain"
       ],
-      "description": "How Portugal votes: none (no highlight), yes, no or abstain."
+      "description": "How Portugal votes: none (no highlight), voting (the moment of voting: the seat pulses until the vote shows), yes, no or abstain."
     },
     {
       "name": "ro",
@@ -349,11 +374,12 @@
       "default": "none",
       "values": [
         "none",
+        "voting",
         "yes",
         "no",
         "abstain"
       ],
-      "description": "How Romania votes: none (no highlight), yes, no or abstain."
+      "description": "How Romania votes: none (no highlight), voting (the moment of voting: the seat pulses until the vote shows), yes, no or abstain."
     },
     {
       "name": "sk",
@@ -362,11 +388,12 @@
       "default": "none",
       "values": [
         "none",
+        "voting",
         "yes",
         "no",
         "abstain"
       ],
-      "description": "How Slovakia votes: none (no highlight), yes, no or abstain."
+      "description": "How Slovakia votes: none (no highlight), voting (the moment of voting: the seat pulses until the vote shows), yes, no or abstain."
     },
     {
       "name": "si",
@@ -375,11 +402,12 @@
       "default": "none",
       "values": [
         "none",
+        "voting",
         "yes",
         "no",
         "abstain"
       ],
-      "description": "How Slovenia votes: none (no highlight), yes, no or abstain."
+      "description": "How Slovenia votes: none (no highlight), voting (the moment of voting: the seat pulses until the vote shows), yes, no or abstain."
     },
     {
       "name": "es",
@@ -388,11 +416,12 @@
       "default": "none",
       "values": [
         "none",
+        "voting",
         "yes",
         "no",
         "abstain"
       ],
-      "description": "How Spain votes: none (no highlight), yes, no or abstain."
+      "description": "How Spain votes: none (no highlight), voting (the moment of voting: the seat pulses until the vote shows), yes, no or abstain."
     },
     {
       "name": "se",
@@ -401,11 +430,12 @@
       "default": "none",
       "values": [
         "none",
+        "voting",
         "yes",
         "no",
         "abstain"
       ],
-      "description": "How Sweden votes: none (no highlight), yes, no or abstain."
+      "description": "How Sweden votes: none (no highlight), voting (the moment of voting: the seat pulses until the vote shows), yes, no or abstain."
     }
   ],
   "preset": {
@@ -421,14 +451,91 @@
     "sk": "yes"
   },
   "notes": [
-    "Set a vote with `vm.enum(\"de\").value = \"yes\"`. The values are `none`, `yes`, `no` and `abstain`; any other string is ignored.",
-    "All 27 member states have a seat, from `at` (Austria) to `se` (Sweden).",
-    "Each change animates by itself (about a third of a second): the flag pops, the rim colours, the badge appears. Setting all 27 at once reads as a wave of lights; for a dramatic count, set them one by one with a short delay.",
-    "The file does not count the votes; your page knows the values it set, so it can show the tally and decide on a qualified majority (55% of the states representing 65% of the population).",
+    "Set a vote with `vm.enum(\"de\").value = \"yes\"`. The values are `none`, `voting`, `yes`, `no` and `abstain`; any other string is ignored.",
+    "`voting` is the moment of voting: the flag lifts and waves, the member pulses, gold rings ripple out of the seat and the badge shows three dots. Set the actual vote after it, for example 0.8 s later.",
+    "\"Hold a vote\" on this page plays a whole round like the real Council: everyone back to none, then country by country in protocol order (BE, BG, CZ ... FI, SE), which is clockwise round this table. The HTML and React code include the same round as a `holdVote()` function.",
+    "At the end the page shows the outcome under the qualified majority: at least 15 of the 27 states (55%) voting yes, representing at least 65% of the EU population. Abstaining counts as not voting yes.",
     "The vector source is in the repository (sources/eu-council-vote/eu-court.svg), with every person, chair, table segment and flag as a named group."
   ],
   "author": "Stijlbreuk",
   "source": "sources/eu-council-vote/ in this repository: eu-court.svg (from EU-court_27_leden.ai) and generate.py",
   "license": "For teaching and projects about the EU. The figures are fictional.",
-  "added": "2026-10-01"
+  "added": "2026-10-01",
+  "round": {
+    "label": "Hold a vote",
+    "reset": "none",
+    "pending": "voting",
+    "outcomes": {
+      "yes": 0.6,
+      "no": 0.25,
+      "abstain": 0.15
+    },
+    "order": [
+      "be",
+      "bg",
+      "cz",
+      "dk",
+      "de",
+      "ee",
+      "ie",
+      "gr",
+      "es",
+      "fr",
+      "hr",
+      "it",
+      "cy",
+      "lv",
+      "lt",
+      "lu",
+      "hu",
+      "mt",
+      "nl",
+      "at",
+      "pl",
+      "pt",
+      "ro",
+      "si",
+      "sk",
+      "fi",
+      "se"
+    ],
+    "start": 700,
+    "think": 1000,
+    "pause": 250,
+    "majority": {
+      "states": 0.55,
+      "population": 0.65,
+      "blocking": 4
+    },
+    "population": {
+      "de": 83.45,
+      "fr": 68.4,
+      "it": 58.99,
+      "es": 48.62,
+      "pl": 36.62,
+      "ro": 19.06,
+      "nl": 17.94,
+      "be": 11.83,
+      "cz": 10.9,
+      "se": 10.55,
+      "pt": 10.64,
+      "gr": 10.4,
+      "hu": 9.58,
+      "at": 9.16,
+      "bg": 6.45,
+      "dk": 5.96,
+      "fi": 5.6,
+      "sk": 5.42,
+      "ie": 5.27,
+      "hr": 3.86,
+      "lt": 2.89,
+      "si": 2.12,
+      "lv": 1.87,
+      "ee": 1.37,
+      "cy": 0.93,
+      "lu": 0.67,
+      "mt": 0.56
+    },
+    "populationNote": "Population in millions, 1 January 2024 (Eurostat, rounded)."
+  }
 }

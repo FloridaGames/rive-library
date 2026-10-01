@@ -279,7 +279,7 @@
   function controlHtml(s, c) {
     if (c.internal) return '';
     var v = values(s)[c.name];
-    if (c.type === 'enum' && c.values && c.values.length <= 4) {
+    if (c.type === 'enum' && c.values && c.values.length <= 5) {
       /* a short enum is one row of buttons: the council vote has 25 of them, and a dropdown each is a chore */
       return '<div class="ctl ctl-inline" title="' + esc(c.description || '') + '"><span class="lbl">' + esc(c.label || c.name) +
         ' <code>' + esc(c.name) + '</code></span><div class="seg seg-sm" role="group" aria-label="' + esc(c.label || c.name) + '" data-enum="' + esc(c.name) + '">' +
@@ -310,6 +310,61 @@
     }
     return '<div class="ctl">' + head + body + desc + '</div>';
   }
+  /* ---------- a vote round (samples with "round" in sample.json) ---------- */
+
+  function roundBarHtml(s) {
+    var r = s.round, outs = Object.keys(r.outcomes);
+    return '<div class="round-bar"><button class="btn btn-primary" type="button" id="round-go">▶ ' + esc(r.label || 'Hold a vote') + '</button>' +
+      '<div class="tally" id="tally" aria-live="polite">' +
+      outs.map(function (o) { return '<span class="t t-' + esc(o) + '"><b data-count="' + esc(o) + '">0</b> ' + esc(o) + '</span>'; }).join('') +
+      '<span class="t t-left" id="tally-left"></span></div>' +
+      '<label class="speed">Speed <select id="round-speed"><option value="1">1×</option><option value="2">2×</option><option value="4">4×</option></select></label></div>' +
+      '<p class="round-result" id="round-result" hidden></p>';
+  }
+
+  function wireRound(s, player, setEnum, codeSoon) {
+    var r = s.round, go = $('#round-go'), left = $('#tally-left'), out = $('#round-result');
+    var labels = {}, run = null;
+    (s.controls || []).forEach(function (c) { labels[c.name] = c.label || c.name; });
+    var byName = {};
+    (s.controls || []).forEach(function (c) { byName[c.name] = c; });
+    function set(code, v) { if (byName[code]) setEnum(byName[code], v); }
+    function tally(result, now) {
+      var count = {};
+      Object.keys(r.outcomes).forEach(function (o) { count[o] = 0; });
+      Object.keys(result).forEach(function (c) { if (count[result[c]] !== undefined) count[result[c]]++; });
+      Object.keys(count).forEach(function (o) { var b = $('[data-count="' + o + '"]'); if (b) b.textContent = count[o]; });
+      var todo = r.order.length - Object.keys(result).length;
+      left.textContent = now ? labels[now] + ' is voting…' : todo ? todo + ' to vote' : 'all ' + r.order.length + ' have voted';
+    }
+    function idle() { go.textContent = '▶ ' + (r.label || 'Hold a vote'); go.classList.remove('running'); }
+    tally({}, null);
+    left.textContent = r.order.length + ' members';
+    go.addEventListener('click', function () {
+      if (run && run.running()) { run.stop(); run = null; idle(); left.textContent = 'stopped'; return; }
+      out.hidden = true;
+      go.textContent = '■ Stop'; go.classList.add('running');
+      tally({}, null);
+      var speed = +$('#round-speed').value || 1;
+      var timed = Object.assign({}, r, { start: (r.start || 700) / speed, think: (r.think || 800) / speed, pause: (r.pause || 200) / speed });
+      run = VoteRound.run(set, timed, {
+        onStep: function (code, v, i, result) { tally(result, v === r.pending ? code : null); codeSoon(); },
+        onDone: function (result) {
+          idle(); go.textContent = '▶ Vote again';
+          if (!r.population) return;
+          var m = VoteRound.majority(result, r), pct = Math.round(m.share * 100);
+          out.className = 'round-result ' + (m.adopted ? 'adopted' : 'rejected');
+          out.innerHTML = '<strong>' + (m.adopted ? 'Adopted' : 'Not adopted') + '</strong> by qualified majority. ' +
+            m.count.yes + ' of ' + m.members + ' states voted yes ' + (m.statesOk ? '(at least ' + m.need + ' needed)' : '(' + m.need + ' needed)') +
+            ', representing ' + pct + '% of the EU population ' + (m.popOk ? '(at least ' : '(') + Math.round(m.needShare * 100) + '% needed).' +
+            (m.count.abstain ? ' Abstentions count as not voting yes.' : '');
+          out.hidden = false;
+        },
+      });
+    });
+    players.push({ destroy: function () { if (run) run.stop(); } });
+  }
+
   function nearest(list, v) {
     var best = 0;
     list.forEach(function (x, i) { if (Math.abs(x - v) < Math.abs(list[best] - v)) best = i; });
@@ -331,7 +386,7 @@
     var trigs = (s.controls || []).filter(function (c) { return !c.internal && c.type === 'trigger'; });
     var hidden = (s.controls || []).filter(function (c) { return c.internal; });
     var enums = ctrls.filter(function (c) { return c.type === 'enum' && c.values && c.values.length > 1; });
-    var manyEnums = enums.length >= 5;
+    var manyEnums = enums.length >= 5 && !s.round;      /* a sample with a vote round has a better button */
     var tall = s.width / s.height < 1.3 && (s.displayWidth || s.width) >= 400;   /* a big square picture gets a taller stage */
     var related = lib.samples.filter(function (x) { return x.id !== s.id && (s.collection ? x.collection === s.collection : x.category === s.category); });
 
@@ -341,7 +396,7 @@
       '<h1>' + esc(s.title) + '</h1><p class="lede">' + inline(s.summary) + '</p></header>' +
 
       '<div class="detail-grid"><div class="col-main">' +
-      '<section class="stage-wrap" aria-label="Preview">' +
+      '<section class="stage-wrap" aria-label="Preview">' + (s.round ? roundBarHtml(s) : '') +
       '<div class="stage' + (bgWhich === 'checker' ? ' checker' : '') + (tall ? ' tall' : '') + '" id="stage" style="--stage-bg:' + esc(bgColor(s, bgWhich)) + '">' +
       '<canvas id="preview" style="--w:' + Math.round(stageW) + 'px;--ar:' + s.width + ' / ' + s.height + ';--arn:' + (s.width / s.height).toFixed(4) + '"></canvas>' +
       '<span class="hint">' + (s.recipe ? 'Click to draw it again' : s.hoverTrigger ? 'Click the animation to play the ' + esc(s.hoverTrigger) : '') + '</span></div>' +
@@ -452,7 +507,8 @@
       });
     });
     $$('[data-fire]').forEach(function (b) { b.addEventListener('click', function () { player.fire(b.dataset.fire); }); });
-    /* random values, set one by one in a random order: for the council vote that is a vote rolling in */
+    if (s.round) wireRound(s, player, setEnum, codeSoon);
+    /* random values, set one by one in a random order */
     var shuffle = $('#shuffle'), wave = [];
     if (shuffle) shuffle.addEventListener('click', function () {
       wave.forEach(clearTimeout);
@@ -506,16 +562,19 @@
         optsEl.innerHTML = widthField;
         text = C.react(s, BASE, v, o); lang = 'tsx';
       } else if (tab === 'embed') {
-        var eo = state.embed[s.id] || (state.embed[s.id] = { bg: 'transparent', every: 0 });
+        var eo = state.embed[s.id] || (state.embed[s.id] = { bg: 'transparent', every: 0, round: !!s.round });
         optsEl.innerHTML = widthField +
           '<label>Background <select id="opt-bg"><option value="transparent">Transparent</option><option value="suggested">' + esc(s.background || '#ffffff') + '</option></select></label>' +
-          '<label>Replay every <input type="number" min="0" max="3600" step="1" id="opt-every" value="' + (eo.every || 0) + '"> s</label>';
+          '<label>Replay every <input type="number" min="0" max="3600" step="1" id="opt-every" value="' + (eo.every || 0) + '"> s</label>' +
+          (s.round ? '<label><input type="checkbox" id="opt-round"' + (eo.round ? ' checked' : '') + '> ' + esc(s.round.label || 'Vote') + ' button</label>' : '');
         $('#opt-bg').value = eo.bg;
         o.background = eo.bg === 'suggested' ? s.background : 'transparent';
         o.every = eo.every || 0;
+        o.round = !!eo.round;
         text = C.embed(s, BASE, v, o);
         $('#opt-bg').addEventListener('change', function (e) { eo.bg = e.target.value; renderUse(); });
         $('#opt-every').addEventListener('change', function (e) { eo.every = Math.max(0, Math.round(+e.target.value || 0)); renderUse(); });
+        if ($('#opt-round')) $('#opt-round').addEventListener('change', function (e) { eo.round = e.target.checked; renderUse(); });
       } else {
         optsEl.innerHTML = '';
         var files = [

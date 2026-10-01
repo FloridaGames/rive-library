@@ -67,6 +67,17 @@ for (const dir of fs.readdirSync(path.join(ROOT, 'samples')).sort()) {
     if (c.type === 'number' && c.min !== undefined && c.max !== undefined && c.min > c.max) bad(`control "${c.name}": min is above max`);
     if (c.type === 'enum' && c.values && c.default !== undefined && !c.values.includes(c.default)) bad(`control "${c.name}": default "${c.default}" is not one of its values`);
   }
+  if (s.round) {
+    const r = s.round, byName = Object.fromEntries((s.controls || []).map((c) => [c.name, c]));
+    for (const code of r.order || []) {
+      const c = byName[code];
+      if (!c) { bad(`"round.order" has "${code}", which is not a control`); continue; }
+      for (const v of [r.reset, r.pending, ...Object.keys(r.outcomes || {})]) {
+        if (c.values && !c.values.includes(v)) bad(`"round" uses "${v}", which "${code}" does not have`);
+      }
+    }
+    if (!(r.order || []).length) bad('"round.order" is empty');
+  }
   for (const [k, v] of Object.entries(s.preset || {})) {
     const c = (s.controls || []).find((x) => x.name === k);
     if (!c) bad(`"preset" sets "${k}", which is not a control`);
